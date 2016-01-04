@@ -45,7 +45,7 @@ declare -Ag sample2bamjob
 declare -Ag pooled2bamjob
 function parse_jid () 
 { #parses the job id from output of qsub
-	if [ -z $1 ]; then
+	if [[ -z $1 ]]; then
 	echo parse_jid expects output of qsub as first input but input was empty! stop
 	exit 1
 	fi
