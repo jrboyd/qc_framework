@@ -215,7 +215,7 @@ for key in ${b[@]}; do
 
         #else
 	pooled_bam=$OUT_DIR/"$key"_pooled.bam
-	echo BBBB $topool_jobs $poolstr $pooled_bam BBBB
+	echo $topool_jobs $poolstr $pooled_bam
         echo gonna pool ${topool[@]} into $key.bam
         pool_job_id=$(bash qc_pool_reps.sh $topool_jobs $poolstr $pooled_bam)
         pooled2bamjob["$key"]=$pool_job_id
@@ -232,7 +232,7 @@ for key in ${b[@]}; do
         input_jid="${pooled2bamjob["$input"]}"
 	inputtreatpoooled=$pool_job_id,$input_jid
 	input_bam=$OUT_DIR/$input"_pooled.bam"
-	echo CCCC  waiting for bam pool jobs $inputtreatpoooled to run macs with $pooled_bam";"$input_bam $key:$inkey
+	echo waiting for bam pool jobs $inputtreatpoooled to run macs with $pooled_bam";"$input_bam $key:$inkey
         #fi
 	poolpeaks_job_id=$(bash qc_pool_runner.sh $inputtreatpoooled $pooled_bam";"$input_bam)
 	

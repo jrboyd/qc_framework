@@ -5,7 +5,7 @@ input=$1
 output=$2
 job_depends=$3
 if [ -z $input ]; then
-echo arg1 should be input but was blank! stop >> $LOG_FILE
+log "arg1 should be input but was blank! stop"
 exit 1
 fi
 #if [ ! -e $input ]; then
@@ -13,20 +13,20 @@ fi
 #exit 1
 #fi
 if [ -z $output ]; then
-echo arg2 should be output but was blank! stop >> $LOG_FILE
+log "arg2 should be output but was blank! stop"
 exit 1
 fi
 if [ -z $job_depends ]; then
-echo arg3 should be dependency job id! stop >> $LOG_FILE
+log "arg3 should be dependency job id! stop"
 fi
 
-echo --- starting step 2 >> $LOG_FILE
-echo input is $input >> $LOG_FILE
-echo output is $output >> $LOG_FILE
-echo will wait for $job_depends >> $LOG_FILE
+log "--- starting step 2"
+log "    input is $input"
+log "    output is $output"
+log "    will wait for $job_depends"
 JOB1=$(qsub -v INPUT=$input,OUTPUT=$output -hold_jid $job_depends job_scripts/trimcut_fastq2bam.sh) #add file here
 #returns whole line
-JOBID=$(awk -v RS=[0-9]+ '{print RT+0;exit}' <<< "$JOB1") #returns JOBID
-echo --- step 2 finished >> $LOG_FILE
-echo JOBID for step 3 is $JOBID >> $LOG_FILE
+JOBID=$(parse_jid "$JOB1") #returns JOBID
+log "--- step 2 finished"
+log "    JOBID for step 3 is $JOBID"
 echo $JOBID

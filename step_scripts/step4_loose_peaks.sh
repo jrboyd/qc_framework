@@ -9,10 +9,11 @@ fi
 if [ -z $DEP_JIDS ]; then
 DEP_JIDS=$3
 fi
-echo calling peaks with: >> $LOG_FILE
+log "---- start step4"
+log "     calling peaks with:"
 #log "logtest"
-echo TREAT_BAM is $TREAT_BAM >> $LOG_FILE
-echo INPUT_BAM is $INPUT_BAM >> $LOG_FILE
+log "     TREAT_BAM is $TREAT_BAM"
+log "     INPUT_BAM is $INPUT_BAM"
 PREFIX=$(basename $TREAT_BAM)
 PREFIX=${PREFIX/.bam/""}
 OUTDIR=$(dirname $TREAT_BAM)/$PREFIX
@@ -25,7 +26,8 @@ qsub_out=$(qsub -v TREAT_BAM=$TREAT_BAM,INPUT_BAM=$INPUT_BAM,PREFIX=$PREFIX,OUTD
 #echo BBB >> $LOG_FILE
 
 jid=$(parse_jid "$qsub_out")
-echo QSUB_OUT is $qsub_out >> $LOG_FILE
-echo JID is $jid >> $LOG_FILE
+log "     QSUB_OUT is $qsub_out"
+log "     JID is $jid"
+log "---- end step4"
 echo "$jid"
 
