@@ -9,6 +9,7 @@ if [ -z $DEP_JIDS ]; then
 DEP_JIDS=$3
 fi
 echo calling peaks with: >> $LOG_FILE
+log "logtest"
 echo TREAT_BAM is $TREAT_BAM >> $LOG_FILE
 echo INPUT_BAM is $INPUT_BAM >> $LOG_FILE
 PREFIX=$(basename $TREAT_BAM)
@@ -20,6 +21,8 @@ fi
 mkdir $OUTDIR
 
 qsub_out=$(qsub -v TREAT_BAM=$TREAT_BAM,INPUT_BAM=$INPUT_BAM,PREFIX=$PREFIX,OUTDIR=$OUTDIR -hold_jid $DEP_JIDS job_scripts/run_macs2.sh)
-jid=$(parse_jid $qsub_out)
-echo $jid
+jid=$(parse_jid "$qsub_out")
+echo QSUB_OUT is $qsub_out >> $LOG_FILE
+echo JID is $jid >> $LOG_FILE
+echo "$jid"
 

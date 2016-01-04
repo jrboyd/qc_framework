@@ -48,9 +48,25 @@ function parse_jid ()
 	if [ -z $1 ]; then
 	echo parse_jid expects output of qsub as first input but input was empty! stop
 	exit 1
+	fi
 	JOBID=$(awk -v RS=[0-9]+ '{print RT+0;exit}' <<< "$1") #returns JOBID	
 	echo $JOBID
 }
+export -f parse_jid
+function log () 
+{ #appends input string to global log file
+	if [[ $# -gt 1 ]]; then
+	echo expects single quoted string! stop
+	exit 1
+	fi
+	
+	if [[ -z $1 ]]; then
+	echo expects single quoted string! stop
+	exit 1
+	fi
+	echo "$1" >> $LOG_FILE
+}
+export -f log
 
 #all remaining lines should contain info for 1 fastq file
 NF=$(tail -n +3 $CFG | awk 'BEGIN {FS=","} {if (NR == 1) print NF}')
