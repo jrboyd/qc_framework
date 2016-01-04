@@ -16,10 +16,15 @@ log "arg2 should be output but was blank! stop"
 exit 1
 fi
 
+
+
+#SRCDIR=$(pwd)
+OUTDIR=$(dirname $output)
+#cd $OUTDIR
 log "--- starting step 1"
 log "    input is $input"
 log "    output is $output"
-JOB1=$(qsub -v INPUT=$input,OUTPUT=$output job_scripts/fastq2trimcut_fastq.sh) #add file here
+JOB1=$(qsub -v INPUT=$input,OUTPUT=$output -wd $OUTDIR job_scripts/fastq2trimcut_fastq.sh) #add file here
 #returns whole line
 #JOBID=$(awk -v RS=[0-9]+ '{print RT+0;exit}' <<< "$JOB1") #returns JOBID
 JOBID=$(parse_jid "$JOB1")
@@ -27,5 +32,5 @@ JOBID=$(parse_jid "$JOB1")
 #echo JOBID for step 2 is $JOBID >> $LOG_FILE
 log "--- step 1 finished"
 log "    wait JOBID for step 2 is $JOBID"
-
+#cd $SRCDIR
 echo $JOBID

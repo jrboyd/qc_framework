@@ -19,14 +19,17 @@ fi
 if [ -z $job_depends ]; then
 log "arg3 should be dependency job id! stop"
 fi
-
+#SRCDIR=$(pwd)
+OUTDIR=$(dirname $output)
+#cd $OUTDIR
 log "--- starting step 2"
 log "    input is $input"
 log "    output is $output"
 log "    will wait for $job_depends"
-JOB1=$(qsub -v INPUT=$input,OUTPUT=$output -hold_jid $job_depends job_scripts/trimcut_fastq2bam.sh) #add file here
+JOB1=$(qsub -wd $OUTDIR -v INPUT=$input,OUTPUT=$output -hold_jid $job_depends job_scripts/trimcut_fastq2bam.sh) #add file here
 #returns whole line
 JOBID=$(parse_jid "$JOB1") #returns JOBID
 log "--- step 2 finished"
 log "    JOBID for step 3 is $JOBID"
+#cd $SRCDIR
 echo $JOBID

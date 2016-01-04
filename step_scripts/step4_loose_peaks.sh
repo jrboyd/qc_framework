@@ -16,11 +16,11 @@ log "     TREAT_BAM is $TREAT_BAM"
 log "     INPUT_BAM is $INPUT_BAM"
 PREFIX=$(basename $TREAT_BAM)
 PREFIX=${PREFIX/.bam/""}
-OUTDIR=$(dirname $TREAT_BAM)/$PREFIX
-if [ -d $OUTDIR ]; then
-rm -r $OUTDIR
-fi
-mkdir $OUTDIR
+OUTDIR=$(dirname $TREAT_BAM)
+#if [ -d $OUTDIR ]; then
+#rm -r $OUTDIR
+#fi
+#mkdir $OUTDIR
 #echo AAA >> $LOG_FILE
 qsub_out=$(qsub -v TREAT_BAM=$TREAT_BAM,INPUT_BAM=$INPUT_BAM,PREFIX=$PREFIX,OUTDIR=$OUTDIR -hold_jid $DEP_JIDS job_scripts/run_macs2.sh)
 #echo BBB >> $LOG_FILE

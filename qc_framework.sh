@@ -27,18 +27,18 @@ then
     while true; do
         read -p "$OUT_DIR exists, should it be removed and overwritten? script will exit if no." yn
         case $yn in
-            [Yy]* ) rm -r $OUT_DIR; break;;
+            [Yy]* ) rm -r $OUT_DIR; mkdir $OUT_DIR; break;;
             [Nn]* ) exit;;
             * ) echo "Please answer yes or no.";;
         esac
     done
 fi
 
-if [ ! -d $OUT_DIR ]; then
-        echo $OUT_DIR does not exist, creating
-	mkdir $OUT_DIR
+#if [ ! -d $OUT_DIR ]; then
+ #       echo $OUT_DIR does not exist, creating
+#	mkdir $OUT_DIR
         OUT_DIR=$(readlink -f $OUT_DIR)
-fi
+#fi
 #some useful global functions and variabls
 export LOG_FILE=$OUT_DIR/samples.log
 declare -Ag sample2bamjob
@@ -129,7 +129,8 @@ while [ $i -lt ${#RAW[@]} ]; do
 	sample_id=$(head -n $(( $i + 1 )) $TMP_SAMPLE | tail -n 1)
 	if echo $sample_id | grep -iq input; then
     		echo $sample_id
-		input=$OUT_DIR/$sample_id.fastq
+		mkdir $OUT_DIR/$sample_id
+		input=$OUT_DIR/$sample_id/$sample_id.fastq
 		ln ${RAW[$i]} $input
 		bam_job_id=$(bash qc_rep_runner.sh $input)
 		sample2bamjob[$sample_id]=$bam_job_id
@@ -143,6 +144,7 @@ a=( $(cat $OUT_DIR/tmp.sample_ids) )
 b=( $(cat $OUT_DIR/tmp.pooled_ids | sort | uniq) )
 for key in ${b[@]}; do
 	echo $key
+	key="$key"_pooled
 	if ! $(echo $key | grep -iq input); then
         	continue
 	fi
@@ -163,7 +165,7 @@ for key in ${b[@]}; do
 		
 	#else
 		echo gonna pool ${topool[@]} into $key.bam
-		pool_job_id=$(bash qc_pool_reps.sh $topool_jobs $poolstr $OUT_DIR/"$key"_pooled.bam)
+		pool_job_id=$(bash qc_pool_reps.sh $topool_jobs $poolstr $OUT_DIR/"$key".bam)
 		pooled2bamjob["$key"]=$pool_job_id
 	#fi
 done
@@ -174,7 +176,8 @@ while [ $i -lt ${#RAW[@]} ]; do
         sample_id=$(head -n $(( $i + 1 )) $TMP_SAMPLE | tail -n 1)
         if ! echo $sample_id | grep -iq input; then
                 echo $sample_id
-                treat=$OUT_DIR/$sample_id.fastq
+		mkdir $OUT_DIR/$sample_id
+                treat=$OUT_DIR/$sample_id/$sample_id.fastq
                 ln ${RAW[$i]} $treat
 		#match sample to appropriate pooled input
 		key=$(echo $sample_id | rev | cut -d _ -f 3- | rev)
@@ -195,6 +198,7 @@ done
 #pool noninput bams
 for key in ${b[@]}; do
         echo $key
+	key="$key"_pooled
         if $(echo $key | grep -iq input); then
                 continue
         fi
@@ -214,24 +218,25 @@ for key in ${b[@]}; do
         #       bash qc_pool_reps.sh $topool_jobs $poolstr
 
         #else
-	pooled_bam=$OUT_DIR/"$key"_pooled.bam
+	pooled_bam=$OUT_DIR/"$key".bam
 	echo $topool_jobs $poolstr $pooled_bam
         echo gonna pool ${topool[@]} into $key.bam
         pool_job_id=$(bash qc_pool_reps.sh $topool_jobs $poolstr $pooled_bam)
         pooled2bamjob["$key"]=$pool_job_id
 
 	#match sample to appropriate pooled input
-        inkey=$(echo $key | rev | cut -d _ -f 2- | rev)
+        inkey=$(echo $key | rev | cut -d _ -f 3- | rev)
+	echo AAAA $inkey AAAA
 	input=""
         for samp in "${!pooled2bamjob[@]}"; do
         if $(echo $samp | grep -iq "$inkey".*input); then
 	         input=$samp
-                 #echo AAAA $samp AAAA
         fi
         done
+	echo AAAA $input AAAA
         input_jid="${pooled2bamjob["$input"]}"
 	inputtreatpoooled=$pool_job_id,$input_jid
-	input_bam=$OUT_DIR/$input"_pooled.bam"
+	input_bam=$OUT_DIR/$input".bam"
 	echo waiting for bam pool jobs $inputtreatpoooled to run macs with $pooled_bam";"$input_bam $key:$inkey
         #fi
 	poolpeaks_job_id=$(bash qc_pool_runner.sh $inputtreatpoooled $pooled_bam";"$input_bam)
