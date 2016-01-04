@@ -1,6 +1,8 @@
 #!/bin/bash
 #loads a set of raw fastq files from input config file
 #runs qc_rep_runner.sh once per raw fastq and qc_pooled_runner.sh once per set of replicates on a merged bam file
+
+#load a config file
 CFG=$1
 if [ -z $CFG ]; then
 	CFG=$(pwd)/qc_config.csv
@@ -37,6 +39,18 @@ if [ ! -d $OUT_DIR ]; then
 	mkdir $OUT_DIR
         OUT_DIR=$(readlink -f $OUT_DIR)
 fi
+#some useful global functions and variabls
+export LOG_FILE=$OUT_DIR/samples.log
+declare -Ag sample2bamjob
+declare -Ag pooled2bamjob
+function parse_jid () 
+{ #parses the job id from output of qsub
+	if [ -z $1 ]; then
+	echo parse_jid expects output of qsub as first input but input was empty! stop
+	exit 1
+	JOBID=$(awk -v RS=[0-9]+ '{print RT+0;exit}' <<< "$1") #returns JOBID	
+	echo $JOBID
+}
 
 #all remaining lines should contain info for 1 fastq file
 NF=$(tail -n +3 $CFG | awk 'BEGIN {FS=","} {if (NR == 1) print NF}')
@@ -54,14 +68,19 @@ done
 #cocatenate paramters to sample_id, excluded last column (reps) for pooled_ids
 TMP_POOL=$OUT_DIR/tmp.pooled_ids
 TMP_SAMPLE=$OUT_DIR/tmp.sample_ids
-
+TMP_POOL_JIDS=$OUT_DIR/tmp.pooled_jids
+TMP_SAMPLE_JIDS=$OUT_DIR/tmp.sample_jids
 R=1
 while [ $R -le ${#RAW[@]} ]; do
 sample_id=""
 i=0
+input_index=-1 #the position of input/histone modification in sample ids
 while [ $i -lt $(( $NPARAM - 1 )) ]; do
 col=$(( $i + 2 ))
 param=$(tail -n +3 $CFG | awk -v col=$col -v row=$R 'BEGIN {FS=","; OFS=""} {if (NR == row) {print $col}}')
+if echo $param | grep -iq input; then
+input_index=$i
+fi
 sample_id=$sample_id"_"$param
 i=$(( $i + 1 ))
 done
@@ -73,6 +92,7 @@ echo $pooled_id >> $TMP_POOL
 echo $sample_id >> $TMP_SAMPLE
 R=$(( $R + 1 ))
 done
+echo input index is $input_index
 #check that all sample_ids are unique, report number of pooled_ids
 total_samples=$(cat $TMP_SAMPLE | wc -l)
 uniq_samples=$(sort $TMP_SAMPLE | uniq | wc -l)
@@ -89,12 +109,130 @@ echo $total_samples samples will be consolidated to $total_pooled pooled files
 #submit input jobs
 i=0
 
-
-#submit non-input jobs
 while [ $i -lt ${#RAW[@]} ]; do
 	sample_id=$(head -n $(( $i + 1 )) $TMP_SAMPLE | tail -n 1)
 	if echo $sample_id | grep -iq input; then
     		echo $sample_id
+		input=$OUT_DIR/$sample_id.fastq
+		ln ${RAW[$i]} $input
+		bam_job_id=$(bash qc_rep_runner.sh $input)
+		sample2bamjob[$sample_id]=$bam_job_id
 	fi
 	i=$(( $i + 1 ))
 done
+#pooled input jobs
+#for each unique pooled_id, if input submit all matching reps
+#!/bin/bash
+a=( $(cat $OUT_DIR/tmp.sample_ids) )
+b=( $(cat $OUT_DIR/tmp.pooled_ids | sort | uniq) )
+for key in ${b[@]}; do
+	echo $key
+	if ! $(echo $key | grep -iq input); then
+        	continue
+	fi
+	topool=()
+	topool_jobs=""
+	for samp in ${a[@]}; do
+		if echo $samp | grep -iq $key; then
+			topool+=($samp.bam)
+			topool_jobs=$topool_jobs","${sample2bamjob["$samp"]}
+		fi
+	done
+	topool_jobs=${topool_jobs/","/""} #remove leading comma
+	poolstr=${topool[@]}
+	poolstr=${poolstr//" "/";"} #fill whitespace
+	#if [ ${#topool[@]} -eq 1 ]; then
+	#	echo pooling not necessary, just link for $key.bam to ${topool[0]}.bam
+	#	bash qc_pool_reps.sh $topool_jobs $poolstr
+		
+	#else
+		echo gonna pool ${topool[@]} into $key.bam
+		pool_job_id=$(bash qc_pool_reps.sh $topool_jobs $poolstr $OUT_DIR/"$key"_pooled.bam)
+		pooled2bamjob["$key"]=$pool_job_id
+	#fi
+done
+
+#submit noninput jobs
+i=0
+while [ $i -lt ${#RAW[@]} ]; do
+        sample_id=$(head -n $(( $i + 1 )) $TMP_SAMPLE | tail -n 1)
+        if ! echo $sample_id | grep -iq input; then
+                echo $sample_id
+                treat=$OUT_DIR/$sample_id.fastq
+                ln ${RAW[$i]} $treat
+		#match sample to appropriate pooled input
+		key=$(echo $sample_id | rev | cut -d _ -f 3- | rev)
+		input=""
+		for samp in "${!pooled2bamjob[@]}"; do
+		if $(echo $samp | grep -iq "$key".*input); then
+                	input=$samp
+			#echo AAAA $samp AAAA
+        	fi
+		done
+		input_jid="${pooled2bamjob["$input"]}"
+		#input=$(echo $sample_id | awk 'BEGIN {FS="_"; OFS="_"} {M=NF-1; $NF=""; $M="input"; print $0}')"pooled.bam"
+                bam_job_id=$(bash qc_rep_runner.sh $treat $input $input_jid)
+                sample2bamjob[$sample_id]=$bam_job_id
+        fi
+        i=$(( $i + 1 ))
+done
+#pool noninput bams
+for key in ${b[@]}; do
+        echo $key
+        if $(echo $key | grep -iq input); then
+                continue
+        fi
+        topool=()
+        topool_jobs=""
+        for samp in ${a[@]}; do
+                if echo $samp | grep -iq $key; then
+                        topool+=($samp.bam)
+                        topool_jobs=$topool_jobs","${sample2bamjob["$samp"]}
+                fi
+        done
+        topool_jobs=${topool_jobs/","/""} #remove leading comma
+        poolstr=${topool[@]}
+        poolstr=${poolstr//" "/";"} #fill whitespace
+        #if [ ${#topool[@]} -eq 1 ]; then
+        #       echo pooling not necessary, just link for $key.bam to ${topool[0]}.bam
+        #       bash qc_pool_reps.sh $topool_jobs $poolstr
+
+        #else
+	pooled_bam=$OUT_DIR/"$key"_pooled.bam
+	echo BBBB $topool_jobs $poolstr $pooled_bam BBBB
+        echo gonna pool ${topool[@]} into $key.bam
+        pool_job_id=$(bash qc_pool_reps.sh $topool_jobs $poolstr $pooled_bam)
+        pooled2bamjob["$key"]=$pool_job_id
+
+	#match sample to appropriate pooled input
+        inkey=$(echo $key | rev | cut -d _ -f 2- | rev)
+	input=""
+        for samp in "${!pooled2bamjob[@]}"; do
+        if $(echo $samp | grep -iq "$inkey".*input); then
+	         input=$samp
+                 #echo AAAA $samp AAAA
+        fi
+        done
+        input_jid="${pooled2bamjob["$input"]}"
+	inputtreatpoooled=$pool_job_id,$input_jid
+	input_bam=$OUT_DIR/$input"_pooled.bam"
+	echo CCCC  waiting for bam pool jobs $inputtreatpoooled to run macs with $pooled_bam";"$input_bam $key:$inkey
+        #fi
+	poolpeaks_job_id=$(bash qc_pool_runner.sh $inputtreatpoooled $pooled_bam";"$input_bam)
+	
+done
+#submit pooled noninput jobs
+
+
+
+for samp in "${!sample2bamjob[@]}"; do
+echo "$samp","${sample2bamjob["$samp"]}" >> $TMP_SAMPLE_JIDS
+done
+for samp in "${!pooled2bamjob[@]}"; do
+echo "$samp","${pooled2bamjob["$samp"]}" >> $TMP_POOL_JIDS
+done
+
+#associative arrays cannot be exported
+#export $sample2bamjob
+#export $pooled2bamjob
+
