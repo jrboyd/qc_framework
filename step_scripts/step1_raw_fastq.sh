@@ -32,5 +32,8 @@ JOBID=$(parse_jid "$JOB1")
 #echo JOBID for step 2 is $JOBID >> $LOG_FILE
 log "--- step 1 finished"
 log "    wait JOBID for step 2 is $JOBID"
-#cd $SRCDIR
+log "--- step 1 start non-dependent"
+report=$(echo $input | cut -d "." -f 1)".report_fastq"
+
+JOB2=$(qsub -v RAW=$input,TC=$output,REPORT=$report -wd $OUTDIR -hold_jid $JOBID job_scripts/fastq_archive_and_report.sh) 
 echo $JOBID
