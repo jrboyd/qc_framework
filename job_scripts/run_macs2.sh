@@ -27,9 +27,7 @@ then
 fi
 
 #model is disabled for testing on small files!
-#macs2 callpeak -t $TREAT_BAM -c $INPUT_BAM -g hs --outdir $OUTDIR -n "$PREFIX"_narrow3 -s 101 --bw 375 -p 1e-3 --bdg --to-large
-#macs2 callpeak -t $TREAT_BAM -c $INPUT_BAM -g hs --outdir $OUTDIR -n "$PREFIX"_narrow5 -s 101 --bw 375 -p 1e-5 --bdg --to-large
+#macs2 callpeak -t $TREAT_BAM -c $INPUT_BAM -g hs --outdir $OUTDIR -n "$PREFIX"_narrow -s 101 --bw 375 -p 1e-2 --bdg --to-large
 
-macs2 callpeak -t $TREAT_BAM -c $INPUT_BAM -g hs --outdir $OUTDIR -n "$PREFIX"_narrow3 -s 101 --bw 375 -p 1e-3 --bdg --to-large --nomodel --extsize 147
-macs2 callpeak -t $TREAT_BAM -c $INPUT_BAM -g hs --outdir $OUTDIR -n "$PREFIX"_narrow5 -s 101 --bw 375 -p 1e-5 --bdg --to-large --nomodel --extsize 147
+macs2 callpeak -t $TREAT_BAM -c $INPUT_BAM -g hs --outdir $OUTDIR -n "$PREFIX"_narrow_nomodel -s 101 --bw 375 -p 1e-2 --bdg --to-large --nomodel --extsize 147
 

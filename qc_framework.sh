@@ -41,6 +41,7 @@ fi
 #fi
 #some useful global functions and variabls
 export LOG_FILE=$OUT_DIR/samples.log
+export JOB_SCRIPTS=$(pwd)/job_scripts
 declare -Ag sample2bamjob
 declare -Ag pooled2bamjob
 function parse_jid () 
