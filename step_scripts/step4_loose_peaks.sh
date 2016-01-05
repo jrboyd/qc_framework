@@ -22,7 +22,7 @@ OUTDIR=$(dirname $TREAT_BAM)
 #fi
 #mkdir $OUTDIR
 #echo AAA >> $LOG_FILE
-qsub_out=$(qsub -v TREAT_BAM=$TREAT_BAM,INPUT_BAM=$INPUT_BAM,PREFIX=$PREFIX,OUTDIR=$OUTDIR -hold_jid $DEP_JIDS job_scripts/run_macs2.sh)
+qsub_out=$(qsub -v TREAT_BAM=$TREAT_BAM,INPUT_BAM=$INPUT_BAM,PREFIX=$PREFIX,OUTDIR=$OUTDIR -wd $OUTDIR -hold_jid $DEP_JIDS job_scripts/run_macs2.sh)
 #echo BBB >> $LOG_FILE
 
 jid=$(parse_jid "$qsub_out")

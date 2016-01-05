@@ -144,7 +144,7 @@ a=( $(cat $OUT_DIR/tmp.sample_ids) )
 b=( $(cat $OUT_DIR/tmp.pooled_ids | sort | uniq) )
 for key in ${b[@]}; do
 	echo $key
-	key="$key"_pooled
+	pooled_name="$key"_pooled
 	if ! $(echo $key | grep -iq input); then
         	continue
 	fi
@@ -152,10 +152,11 @@ for key in ${b[@]}; do
 	topool_jobs=""
 	for samp in ${a[@]}; do
 		if echo $samp | grep -iq $key; then
-			topool+=($samp.bam)
+			topool+=($samp/$samp.bam)
 			topool_jobs=$topool_jobs","${sample2bamjob["$samp"]}
 		fi
 	done
+	mkdir $OUT_DIR/$pooled_name
 	topool_jobs=${topool_jobs/","/""} #remove leading comma
 	poolstr=${topool[@]}
 	poolstr=${poolstr//" "/";"} #fill whitespace
@@ -164,8 +165,8 @@ for key in ${b[@]}; do
 	#	bash qc_pool_reps.sh $topool_jobs $poolstr
 		
 	#else
-		echo gonna pool ${topool[@]} into $key.bam
-		pool_job_id=$(bash qc_pool_reps.sh $topool_jobs $poolstr $OUT_DIR/"$key".bam)
+		echo gonna pool ${topool[@]} into "$pooled_name".bam
+		pool_job_id=$(bash qc_pool_reps.sh $topool_jobs $poolstr $OUT_DIR/$pooled_name/"$pooled_name".bam)
 		pooled2bamjob["$key"]=$pool_job_id
 	#fi
 done
@@ -185,7 +186,6 @@ while [ $i -lt ${#RAW[@]} ]; do
 		for samp in "${!pooled2bamjob[@]}"; do
 		if $(echo $samp | grep -iq "$key".*input); then
                 	input=$samp
-			#echo AAAA $samp AAAA
         	fi
 		done
 		input_jid="${pooled2bamjob["$input"]}"
@@ -198,15 +198,16 @@ done
 #pool noninput bams
 for key in ${b[@]}; do
         echo $key
-	key="$key"_pooled
+	pooled_name="$key"_pooled
         if $(echo $key | grep -iq input); then
                 continue
         fi
+	mkdir $OUT_DIR/$pooled_name
         topool=()
         topool_jobs=""
         for samp in ${a[@]}; do
                 if echo $samp | grep -iq $key; then
-                        topool+=($samp.bam)
+                        topool+=($samp/$samp.bam)
                         topool_jobs=$topool_jobs","${sample2bamjob["$samp"]}
                 fi
         done
@@ -218,14 +219,14 @@ for key in ${b[@]}; do
         #       bash qc_pool_reps.sh $topool_jobs $poolstr
 
         #else
-	pooled_bam=$OUT_DIR/"$key".bam
+	pooled_bam=$OUT_DIR/$pooled_name/"$pooled_name".bam
 	echo $topool_jobs $poolstr $pooled_bam
         echo gonna pool ${topool[@]} into $key.bam
         pool_job_id=$(bash qc_pool_reps.sh $topool_jobs $poolstr $pooled_bam)
         pooled2bamjob["$key"]=$pool_job_id
 
 	#match sample to appropriate pooled input
-        inkey=$(echo $key | rev | cut -d _ -f 3- | rev)
+        inkey=$(echo $key | rev | cut -d _ -f 2- | rev)
 	echo AAAA $inkey AAAA
 	input=""
         for samp in "${!pooled2bamjob[@]}"; do
@@ -236,7 +237,7 @@ for key in ${b[@]}; do
 	echo AAAA $input AAAA
         input_jid="${pooled2bamjob["$input"]}"
 	inputtreatpoooled=$pool_job_id,$input_jid
-	input_bam=$OUT_DIR/$input".bam"
+	input_bam=$OUT_DIR/$input/$input".bam"
 	echo waiting for bam pool jobs $inputtreatpoooled to run macs with $pooled_bam";"$input_bam $key:$inkey
         #fi
 	poolpeaks_job_id=$(bash qc_pool_runner.sh $inputtreatpoooled $pooled_bam";"$input_bam)
