@@ -17,7 +17,7 @@ echo $bam_job
 if [ ! -z $2 ]; then
 log "  call peaks for $BAM_F"
 f=$(basename $BAM_F)
-INPUT_F=$(dirname $BAM_F)/$2"_pooled.bam"
+INPUT_F=$2
 #mark=echo $f | awk -v index=$3 'BEGIN {FS="_"} {print $index}'
 log "  $INPUT_F is input for $BAM_F, waiting for $3,$bam_job"
 macs_job=$(bash step_scripts/step4*.sh $BAM_F $INPUT_F $3,$bam_job)

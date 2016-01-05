@@ -152,7 +152,9 @@ for key in ${b[@]}; do
 	topool_jobs=""
 	for samp in ${a[@]}; do
 		if echo $samp | grep -iq $key; then
-			topool+=($samp/$samp.bam)
+			rep_file=$OUT_DIR/$samp/$samp.bam
+			#rep_file=$(readlink -f $rep_file)
+			topool+=($rep_file)
 			topool_jobs=$topool_jobs","${sample2bamjob["$samp"]}
 		fi
 	done
@@ -185,12 +187,13 @@ while [ $i -lt ${#RAW[@]} ]; do
 		input=""
 		for samp in "${!pooled2bamjob[@]}"; do
 		if $(echo $samp | grep -iq "$key".*input); then
-                	input=$samp
+                	input=$samp"_pooled"
         	fi
 		done
+		input_bam=$OUT_DIR/$input/$input".bam"
 		input_jid="${pooled2bamjob["$input"]}"
 		#input=$(echo $sample_id | awk 'BEGIN {FS="_"; OFS="_"} {M=NF-1; $NF=""; $M="input"; print $0}')"pooled.bam"
-                bam_job_id=$(bash qc_rep_runner.sh $treat $input $input_jid)
+                bam_job_id=$(bash qc_rep_runner.sh $treat $input_bam $input_jid)
                 sample2bamjob[$sample_id]=$bam_job_id
         fi
         i=$(( $i + 1 ))
@@ -207,7 +210,9 @@ for key in ${b[@]}; do
         topool_jobs=""
         for samp in ${a[@]}; do
                 if echo $samp | grep -iq $key; then
-                        topool+=($samp/$samp.bam)
+			rep_file=$OUT_DIR/$samp/$samp.bam
+                        #rep_file=$(readlink -f $rep_file)
+                        topool+=($rep_file)
                         topool_jobs=$topool_jobs","${sample2bamjob["$samp"]}
                 fi
         done
@@ -231,7 +236,7 @@ for key in ${b[@]}; do
 	input=""
         for samp in "${!pooled2bamjob[@]}"; do
         if $(echo $samp | grep -iq "$inkey".*input); then
-	         input=$samp
+	         input="$samp"_pooled
         fi
         done
 	echo AAAA $input AAAA
