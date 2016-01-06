@@ -35,7 +35,7 @@ inputBedGraph=$OUTDIR/*treat_pileup.bdg
 inputChromSizes=/slipstream/galaxy/uploads/working/hg38.chrom.sizes
 outputBigWig=$OUTDIR/$PREFIX.bw
 qsub_out1=$(qsub -v inputBedGraph=$inputBedGraph,inputChromSizes=$inputChromSizes,outputBigWig=$outputBigWig -wd $OUTDIR -hold_jid $jid job_scripts/run_bdg2bw.sh)
-
+hidden=$(parse_jid "$qsub_out1") #not used but records jid
 WD=$OUTDIR
 TREATMENT=$OUTDIR/*treat_pileup.bdg
 CONTROL=$OUTDIR/*control_lambda.bdg
@@ -47,5 +47,6 @@ inputBedGraph=$OUTDIR/*logFE.bdg
 inputChromSizes=/slipstream/galaxy/uploads/working/hg38.chrom.sizes
 outputBigWig=$OUTDIR/"$PREFIX"_logFE.bw
 qsub_out3=$(qsub -v inputBedGraph=$inputBedGraph,inputChromSizes=$inputChromSizes,outputBigWig=$outputBigWig  -wd $OUTDIR -hold_jid $jid_cmp job_scripts/run_bdg2bw.sh)
+hidden=$(parse_jid "$qsub_out3") #not used but records jid
 echo "$jid"
 

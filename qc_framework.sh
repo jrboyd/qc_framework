@@ -25,9 +25,9 @@ OUT_DIR=$(head -n 2 $CFG | tail -n 1 | awk 'BEGIN {FS="="} {print $2}')
 if [ -d $OUT_DIR ]
 then
     while true; do
-        read -p "$OUT_DIR exists, should it be removed and overwritten? script will exit if no." yn
+        read -p "$OUT_DIR exists, should it be removed and overwritten? all previous qc_framework jobs will be deleted. script will exit if no." yn
         case $yn in
-            [Yy]* ) rm -r $OUT_DIR; mkdir $OUT_DIR; break;;
+            [Yy]* ) if [ -f $OUT_DIR/tmp.all_jids ]; then for jid in ${all_jids[@]}; do hidden=$(qdel $jid); done; fi; rm -r $OUT_DIR; mkdir $OUT_DIR; break;;
             [Nn]* ) exit;;
             * ) echo "Please answer yes or no.";;
         esac
@@ -41,6 +41,8 @@ fi
 #fi
 #some useful global functions and variabls
 export LOG_FILE=$OUT_DIR/samples.log
+export ALL_JIDS=$OUT_DIR/tmp.all_jids
+#echo "" >> $ALL_JIDS
 export JOB_SCRIPTS=$(pwd)/job_scripts
 declare -Ag sample2bam
 declare -Ag sample2bamjob
@@ -52,6 +54,7 @@ function parse_jid ()
 	exit 1
 	fi
 	JOBID=$(awk -v RS=[0-9]+ '{print RT+0;exit}' <<< "$1") #returns JOBID	
+	echo $JOBID >> $ALL_JIDS
 	echo $JOBID
 }
 export -f parse_jid

@@ -26,3 +26,7 @@ mv Log.final.out $OUTPUT".log"
 #echo trimming file $INPUT
 
 echo aligned file is written to $OUTPUT
+echo indexing file $OUTPUT
+samtools index $OUTPUT
+ls -lha $OUTPUT*
+echo done

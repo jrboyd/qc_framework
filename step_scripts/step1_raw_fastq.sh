@@ -35,5 +35,6 @@ log "    wait JOBID for step 2 is $JOBID"
 log "--- step 1 start non-dependent"
 report=$(echo $input | cut -d "." -f 1)".report_fastq"
 
-JOB2=$(qsub -v RAW=$input,TC=$output,REPORT=$report -wd $OUTDIR -hold_jid $JOBID job_scripts/fastq_archive_and_report.sh) 
+JOB2=$(qsub -v RAW=$input,TC=$output,REPORT=$report -wd $OUTDIR -hold_jid $JOBID job_scripts/fastq_archive_and_report.sh)
+hidden=$(parse_jid "$JOB2") #though not used, this records the job as being submitted 
 echo $JOBID
