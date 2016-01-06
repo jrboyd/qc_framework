@@ -7,27 +7,37 @@ echo TREAT_BAM is $TREAT_BAM
 echo INPUT_BAM is $INPUT_BAM
 echo OUTDIR is $OUTDIR
 echo PREFIX is $PREFIX
+echo PVAL is $PVAL
 echo macs2 on $(basename $TREAT_BAM):$(basename $INPUT_BAM)
 
-if [ -z $TREAT_BAM ]
+if [ -z $TREAT_BAM ] || [ ! -e $TREAT_BAM ]
 then
-	TREAT_BAM=$1
+	echo TREAT_BAM $TREAT_BAM not found! stop
+	exit 1
 fi
-if [ -z $INPUT_BAM ]
+if [ -z $INPUT_BAM ] || [ ! -e $INPUT_BAM ]
 then
-	INPUT_BAM=$2
+	echo INPUT_BAM $INPUT_BAM not found! stop
+	exit 1
 fi
-if [ -z $OUTDIR ]
+if [ -z $OUTDIR ] || [ ! -d $OUTDIR ]
 then
-	OUTDIR=$3
+	echo OUTDIR $OUTDIR not found! stop
+	exit 1
 fi
 if [ -z $PREFIX ]
 then
-	PREFIX=$4
+	echo PREFIX $PREFIX missing! stop
+	exit 1
+fi
+if [ -z $PVAL ]
+then
+	echo PVAL $PVAL missing! stop
+	exit 1
 fi
 
 #model is disabled for testing on small files!
-#macs2 callpeak -t $TREAT_BAM -c $INPUT_BAM -g hs --outdir $OUTDIR -n "$PREFIX"_narrow -s 101 --bw 375 -p 1e-2 --bdg --to-large
+#macs2 callpeak -t $TREAT_BAM -c $INPUT_BAM -g hs --outdir $OUTDIR -n "$PREFIX" -s 101 --bw 375 -p $PVAL --bdg --to-large
 
-macs2 callpeak -t $TREAT_BAM -c $INPUT_BAM -g hs --outdir $OUTDIR -n "$PREFIX"_narrow_nomodel -s 101 --bw 375 -p 1e-2 --bdg --to-large --nomodel --extsize 147
+macs2 callpeak -t $TREAT_BAM -c $INPUT_BAM -g hs --outdir $OUTDIR -n "$PREFIX" -s 101 --bw 375 -p $PVAL --bdg --to-large --nomodel --extsize 147
 

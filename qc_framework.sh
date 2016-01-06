@@ -46,6 +46,8 @@ export ALL_JIDS=$OUT_DIR/tmp.all_jids
 export JOB_SCRIPTS=$(pwd)/job_scripts
 declare -Ag sample2bam
 declare -Ag sample2bamjob
+declare -Ag sample2loose
+declare -Ag sample2loosejob
 declare -Ag pooled2bamjob
 function parse_jid () 
 { #parses the job id from output of qsub
@@ -86,6 +88,7 @@ if [ ! -e $IN_DIR/$f ]; then
 	exit 1
 fi
 done
+
 #cocatenate paramters to sample_id, excluded last column (reps) for pooled_ids
 TMP_POOL=$OUT_DIR/tmp.pooled_ids
 TMP_SAMPLE=$OUT_DIR/tmp.sample_ids
@@ -176,7 +179,7 @@ for key in ${b[@]}; do
 	#else
 		echo gonna pool ${topool[@]} into "$pooled_name".bam
 		pool_job_id=$(bash qc_pool_reps.sh $topool_jobs $poolstr $OUT_DIR/$pooled_name/"$pooled_name".bam)
-		pooled2bamjob["$key"]=$pool_job_id
+		pooled2bamjob["$pooled_name"]=$pool_job_id
 	#fi
 done
 
@@ -195,7 +198,7 @@ while [ $i -lt ${#RAW[@]} ]; do
 		input=""
 		for samp in "${!pooled2bamjob[@]}"; do
 		if $(echo $samp | grep -iq "$key".*input); then
-                	input=$samp"_pooled"
+                	input=$samp
         	fi
 		done
 		input_bam=$OUT_DIR/$input/$input".bam"
@@ -204,6 +207,10 @@ while [ $i -lt ${#RAW[@]} ]; do
                 bam_job_id=$(bash qc_rep_runner.sh $treat $input_bam $input_jid)
                 sample2bamjob[$sample_id]=$bam_job_id
 		sample2bam[$sample_id]=$treat_bam
+		loose_job_id=$(bash step_scripts/step6*.sh $treat $input_bam "$bam_job_id","$input_jid")
+		loose_peaks=${treat_bam/.bam/_loose_peaks.narrowPeak}
+		sample2loose[$sample_id]=$loose_peaks
+		sample2loosejob[$sample_id]=$loose_job_id
         fi
         i=$(( $i + 1 ))
 done
@@ -237,18 +244,18 @@ for key in ${b[@]}; do
 	echo $topool_jobs $poolstr $pooled_bam
         echo gonna pool ${topool[@]} into $key.bam
         pool_job_id=$(bash qc_pool_reps.sh $topool_jobs $poolstr $pooled_bam)
-        pooled2bamjob["$key"]=$pool_job_id
+        pooled2bamjob["$pooled_name"]=$pool_job_id
 
 	#match sample to appropriate pooled input
         inkey=$(echo $key | rev | cut -d _ -f 2- | rev)
-	echo AAAA $inkey AAAA
+#	echo AAAA $inkey AAAA
 	input=""
         for samp in "${!pooled2bamjob[@]}"; do
         if $(echo $samp | grep -iq "$inkey".*input); then
-	         input="$samp"_pooled
+	         input="$samp"
         fi
         done
-	echo AAAA $input AAAA
+#	echo AAAA $input AAAA
         input_jid="${pooled2bamjob["$input"]}"
 	inputtreatpoooled=$pool_job_id,$input_jid
 	input_bam=$OUT_DIR/$input/$input".bam"
@@ -284,8 +291,14 @@ done
 for samp in "${!pooled2bamjob[@]}"; do
 echo "$samp","${pooled2bamjob["$samp"]}" >> $TMP_POOL_JIDS
 done
+for samp in "${!sample2loose[@]}"; do
+echo "$samp","${sample2loose["$samp"]}" >> $OUT_DIR/tmp.loose_peaks
+done
+for samp in "${!sample2loosejob[@]}"; do
+echo "$samp","${sample2loosejob["$samp"]}" >> $OUT_DIR/tmp.loose_jobs
+done
 
 #associative arrays cannot be exported
 #export $sample2bamjob
 #export $pooled2bamjob
-ample2bam[$sample_id]=$output
+#sample2bam[$sample_id]=$output
