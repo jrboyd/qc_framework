@@ -42,6 +42,7 @@ fi
 #some useful global functions and variabls
 export LOG_FILE=$OUT_DIR/samples.log
 export JOB_SCRIPTS=$(pwd)/job_scripts
+declare -Ag sample2bam
 declare -Ag sample2bamjob
 declare -Ag pooled2bamjob
 function parse_jid () 
@@ -132,9 +133,11 @@ while [ $i -lt ${#RAW[@]} ]; do
     		echo $sample_id
 		mkdir $OUT_DIR/$sample_id
 		input=$OUT_DIR/$sample_id/$sample_id.fastq
+		input_bam=${input/.fastq/.bam}
 		ln ${RAW[$i]} $input
 		bam_job_id=$(bash qc_rep_runner.sh $input)
 		sample2bamjob[$sample_id]=$bam_job_id
+		sample2bam[$sample_id]=$input_bam
 	fi
 	i=$(( $i + 1 ))
 done
@@ -182,6 +185,7 @@ while [ $i -lt ${#RAW[@]} ]; do
                 echo $sample_id
 		mkdir $OUT_DIR/$sample_id
                 treat=$OUT_DIR/$sample_id/$sample_id.fastq
+		treat_bam=${treat/.fastq/.bam}
                 ln ${RAW[$i]} $treat
 		#match sample to appropriate pooled input
 		key=$(echo $sample_id | rev | cut -d _ -f 3- | rev)
@@ -196,10 +200,11 @@ while [ $i -lt ${#RAW[@]} ]; do
 		#input=$(echo $sample_id | awk 'BEGIN {FS="_"; OFS="_"} {M=NF-1; $NF=""; $M="input"; print $0}')"pooled.bam"
                 bam_job_id=$(bash qc_rep_runner.sh $treat $input_bam $input_jid)
                 sample2bamjob[$sample_id]=$bam_job_id
+		sample2bam[$sample_id]=$treat_bam
         fi
         i=$(( $i + 1 ))
 done
-#pool noninput bams
+#pool noninput bams, submit at the same time
 for key in ${b[@]}; do
         echo $key
 	pooled_name="$key"_pooled
@@ -249,9 +254,26 @@ for key in ${b[@]}; do
 	poolpeaks_job_id=$(bash qc_pool_runner.sh $inputtreatpoooled $pooled_bam";"$input_bam)
 	
 done
-#submit pooled noninput jobs
 
+#once all rep bams are done, submit bulk compare jobs
+samp_jobs=""
+samp_bams=""
+for samp in "${!sample2bamjob[@]}"; do
+	jid="${sample2bamjob["$samp"]}"
+	bam="${sample2bam["$samp"]}"
+	echo $jid---$bam
+	samp_jobs="$samp_jobs,$jid" 
+	samp_bams="$samp_bams;$bam"
 
+done
+samp_jobs=${samp_jobs/","/""} #remove leading comma
+samp_bams=${samp_bams/";"/""}
+echo all samp_jobs are $samp_jobs
+#step5 args
+#arg 1 bam files delimited by ;
+#arg 2 output directory
+#arg 3 job ids passed to hold_jid to wait for
+step5_o=$(bash step_scripts/step5*.sh $samp_bams $OUT_DIR $samp_jobs)
 
 for samp in "${!sample2bamjob[@]}"; do
 echo "$samp","${sample2bamjob["$samp"]}" >> $TMP_SAMPLE_JIDS
@@ -263,4 +285,4 @@ done
 #associative arrays cannot be exported
 #export $sample2bamjob
 #export $pooled2bamjob
-
+ample2bam[$sample_id]=$output
