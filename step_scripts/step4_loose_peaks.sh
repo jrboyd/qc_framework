@@ -38,6 +38,7 @@ log "     step4 continues"
 #qsub_out1=$(qsub -v inputBedGraph=$inputBedGraph,inputChromSizes=$inputChromSizes,outputBigWig=$outputBigWig -wd $OUTDIR -hold_jid $jid job_scripts/run_bdg2bw.sh)
 #hidden=$(parse_jid "$qsub_out1") #not used but records jid
 
+#create input normalized FE bw track
 WD=$OUTDIR
 TREATMENT=$OUTDIR/*treat_pileup.bdg
 CONTROL=$OUTDIR/*control_lambda.bdg
@@ -50,5 +51,12 @@ inputChromSizes=/slipstream/galaxy/uploads/working/hg38.chrom.sizes
 outputBigWig=$OUTDIR/"$PREFIX"_logFE.bw
 qsub_out3=$(qsub -v inputBedGraph=$inputBedGraph,inputChromSizes=$inputChromSizes,outputBigWig=$outputBigWig  -wd $OUTDIR -hold_jid $jid_cmp job_scripts/run_bdg2bw.sh)
 hidden=$(parse_jid "$qsub_out3") #not used but records jid
+
+#calc FRIP
+#bam_file
+#peak_file
+qsub_out4=$(qsub -v bam_file=$TREAT_BAM,peak_file=$OUTDIR/$PREFIX*peaks.narrowPeak -wd $OUTDIR -hold_jid $jid job_scripts/run_calc_FRIP.sh)
+hidden=$(parse_jid "$qsub_out4") 
+
 echo "$jid"
 
