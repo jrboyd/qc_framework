@@ -32,4 +32,8 @@ for tp in ${topool[@]}; do
 echo $tp
 done
 echo pooling finished into $pooled
+echo indexing $pooled
+samtools index $pooled
+ls -lha $pooled*
+echo done
 #echo "$INPUT" > $pooled
