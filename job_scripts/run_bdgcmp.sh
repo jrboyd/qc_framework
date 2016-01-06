@@ -1,4 +1,8 @@
 #!/usr/bin/bash
+#$ -o bdgcmp."$JOB_ID".out
+#$ -e bdgcmp."$JOB_ID".error
+
+
 #required inputs:
 #TREATMENT
 #CONTROL

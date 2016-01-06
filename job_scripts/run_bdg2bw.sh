@@ -1,4 +1,8 @@
 #!/usr/bin/bash
+#$ -o bdg2bw."$JOB_ID".out
+#$ -e bdg2bw."$JOB_ID".error
+
+
 #required inputs:
 if [ -z $inputBedGraph ]
 then

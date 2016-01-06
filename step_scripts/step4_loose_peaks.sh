@@ -58,5 +58,13 @@ hidden=$(parse_jid "$qsub_out3") #not used but records jid
 qsub_out4=$(qsub -v bam_file=$TREAT_BAM,peak_file=$OUTDIR/$PREFIX*peaks.narrowPeak -wd $OUTDIR -hold_jid $jid job_scripts/run_calc_FRIP.sh)
 hidden=$(parse_jid "$qsub_out4") 
 
+#intersect with feature types
+#PEAKS
+#ANNOT_DIR
+ANNOT_DIR=/slipstream/galaxy/uploads/working/qc_framework/ref/hg38
+qsub_out5=$(qsub -v PEAKS=$OUTDIR/$PREFIX*peaks.narrowPeak,ANNOT_DIR=$ANNOT_DIR -wd $OUTDIR -hold_jid $jid job_scripts/run_annotation_intersects.sh)
+hidden=$(parse_jid "$qsub_out5")
+
+
 echo "$jid"
 
