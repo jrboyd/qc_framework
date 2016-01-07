@@ -26,7 +26,7 @@ log "--- starting step 2"
 log "    input is $input"
 log "    output is $output"
 log "    will wait for $job_depends"
-JOB1=$(qsub -wd $OUTDIR -v INPUT=$input,OUTPUT=$output -hold_jid $job_depends job_scripts/trimcut_fastq2bam.sh) #add file here
+JOB1=$(qsub -wd $OUTDIR -v INPUT=$input,OUTPUT=$output -hold_jid $job_depends job_scripts/run_aligner.sh) #add file here
 #returns whole line
 JOBID=$(parse_jid "$JOB1") #returns JOBID
 log "--- step 2 finished"

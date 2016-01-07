@@ -49,6 +49,8 @@ declare -Ag sample2bamjob
 declare -Ag sample2loose
 declare -Ag sample2loosejob
 declare -Ag pooled2bamjob
+declare -Ag pooled2peak
+declare -Ag pooled2peakjob
 function parse_jid () 
 { #parses the job id from output of qsub
 	if [[ -z $1 ]]; then
@@ -207,7 +209,7 @@ while [ $i -lt ${#RAW[@]} ]; do
                 bam_job_id=$(bash qc_rep_runner.sh $treat $input_bam $input_jid)
                 sample2bamjob[$sample_id]=$bam_job_id
 		sample2bam[$sample_id]=$treat_bam
-		loose_job_id=$(bash step_scripts/step6*.sh $treat $input_bam "$bam_job_id","$input_jid")
+		loose_job_id=$(bash step_scripts/step6*.sh $treat_bam $input_bam "$bam_job_id","$input_jid")
 		loose_peaks=${treat_bam/.bam/_loose_peaks.narrowPeak}
 		sample2loose[$sample_id]=$loose_peaks
 		sample2loosejob[$sample_id]=$loose_job_id
@@ -262,6 +264,8 @@ for key in ${b[@]}; do
 	echo waiting for bam pool jobs $inputtreatpoooled to run macs with $pooled_bam";"$input_bam $key:$inkey
         #fi
 	poolpeaks_job_id=$(bash qc_pool_runner.sh $inputtreatpoooled $pooled_bam";"$input_bam)
+	pooled2peak["$pooled_name"]="$pooled_name"_peaks.narrowPeak
+	pooled2peakjob["$pooled_name"]="$poolpeaks_job_id"
 	
 done
 
@@ -284,6 +288,9 @@ echo all samp_jobs are $samp_jobs
 #arg 2 output directory
 #arg 3 job ids passed to hold_jid to wait for
 step5_o=$(bash step_scripts/step5*.sh $samp_bams $OUT_DIR $samp_jobs)
+
+#for sanity, i'll assume 2 and only 2 replicates when doing IDR, for more we'll need a round robin loop here and different output naming scheme
+
 
 for samp in "${!sample2bamjob[@]}"; do
 echo "$samp","${sample2bamjob["$samp"]}" >> $TMP_SAMPLE_JIDS

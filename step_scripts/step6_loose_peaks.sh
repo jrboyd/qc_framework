@@ -19,9 +19,7 @@ PREFIX=$(basename $TREAT_BAM)
 PREFIX=${PREFIX/.bam/""}
 OUTDIR=$(dirname $TREAT_BAM)
 
-if echo $TREAT_BAM | grep -iq pooled; then #don't need loose if pooled
-	qsub_out_loose=$(qsub -v TREAT_BAM=$TREAT_BAM,INPUT_BAM=$INPUT_BAM,PREFIX=$PREFIX"_loose",OUTDIR=$OUTDIR,PVAL="1e-2" -wd $OUTDIR -hold_jid $DEP_JIDS job_scripts/run_macs2.sh)
-fi
+qsub_out_loose=$(qsub -v TREAT_BAM=$TREAT_BAM,INPUT_BAM=$INPUT_BAM,PREFIX=$PREFIX"_loose",OUTDIR=$OUTDIR,PVAL="1e-2" -wd $OUTDIR -hold_jid $DEP_JIDS job_scripts/run_macs2.sh)
 jid=$(parse_jid "$qsub_out_loose")
 
 log "     QSUB_OUT is $qsub_out_loose"

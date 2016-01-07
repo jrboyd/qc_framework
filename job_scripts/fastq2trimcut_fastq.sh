@@ -16,6 +16,9 @@ echo no OUTPUT set! stop
 exit 1
 fi
 
+echo INPUT raw fastq is $INPUT
+echo intermeidate cutadapt is "$INPUT".cutadapt.tmp
+echo OUTPUT tc fastq is $OUTPUT
 
 echo trimming file $INPUT
 PYTHONPATH=/slipstream/galaxy/production/dependencies/galaxy_sequence_utils/1.0.0/devteam/package_galaxy_utils_1_0/0643676ad5f7/lib/python:$PYTHONPATH; export PYTHONPATH
