@@ -290,6 +290,40 @@ echo all samp_jobs are $samp_jobs
 step5_o=$(bash step_scripts/step5*.sh $samp_bams $OUT_DIR $samp_jobs)
 
 #for sanity, i'll assume 2 and only 2 replicates when doing IDR, for more we'll need a round robin loop here and different output naming scheme
+#PEAKS1
+#PEAKS2 - 2 rep files
+#PREFIX - prefix of output file (name without extension)
+#script is job_scripts/run_IDR.sh
+for samp in "${!pooled2peak[@]}"; do
+	root=$(echo $samp | rev | cut -d "_" -f 2- | rev) 
+	echo root for IDR $samp:$root
+	if echo $root | grep -iq "input"; then
+		echo skipping $root as input
+		continue
+	fi
+	IDR_OUT=$OUT_DIR/$samp #IDR output goes to pooled directory
+	PREFIX=$IDR_OUT/"$root"_IDR
+	rep_files=()
+	rep_jids=()
+	for rep in "${!sample2loose[@]}"; do #use root to match rep files
+		if echo $rep | grep -iq "$root"; then
+			rep_files+=("${sample2loose["$rep"]}")
+			rep_jids+=("${sample2loosejob["$rep"]}")
+		fi
+	done
+	#echo loose peak files are ${rep_files[@]}
+	#echo loose peak jids are ${rep_jids[@]}
+	DEP_JIDS=$(echo  ${rep_jids[@]})
+	DEP_JIDS=${DEP_JIDS//" "/","}
+	p1=${rep_files[0]}
+	p2=${rep_files[1]}
+	#echo $p1 $p2 $PREFIX
+	IDR_qsub=$(qsub -v PEAKS1=$p1,PEAKS2=$p2,PREFIX=$PREFIX -wd $IDR_OUT -hold_jid $DEP_JIDS job_scripts/run_IDR.sh)
+	#echo $IDR_qsub
+	IDR_jid=$(parse_jid "$IDR_qsub")
+	#echo IDR_jid is $IDR_jid
+	
+done
 
 
 for samp in "${!sample2bamjob[@]}"; do
