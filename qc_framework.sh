@@ -27,7 +27,7 @@ then
     while true; do
         read -p "$OUT_DIR exists, should it be removed and overwritten? all previous qc_framework jobs will be deleted. script will exit if no." yn
         case $yn in
-            [Yy]* ) if [ -f $OUT_DIR/tmp.all_jids ]; then for jid in ${all_jids[@]}; do hidden=$(qdel $jid); done; fi; rm -r $OUT_DIR; mkdir $OUT_DIR; break;;
+            [Yy]* ) if [ -f $OUT_DIR/tmp.all_jids ]; then echo clearing old jobs; all_jids=( $(cat $OUT_DIR/tmp.all_jids | awk 'ORS=" "') ); for jid in ${all_jids[@]}; do hidden=$(qdel $jid); done; fi; rm -r $OUT_DIR; mkdir $OUT_DIR; break;;
             [Nn]* ) exit;;
             * ) echo "Please answer yes or no.";;
         esac
@@ -325,19 +325,20 @@ for samp in "${!pooled2peak[@]}"; do
 	
 done
 
-
-for samp in "${!sample2bamjob[@]}"; do
-echo "$samp","${sample2bamjob["$samp"]}" >> $TMP_SAMPLE_JIDS
-done
-for samp in "${!pooled2bamjob[@]}"; do
-echo "$samp","${pooled2bamjob["$samp"]}" >> $TMP_POOL_JIDS
-done
-for samp in "${!sample2loose[@]}"; do
-echo "$samp","${sample2loose["$samp"]}" >> $OUT_DIR/tmp.loose_peaks
-done
-for samp in "${!sample2loosejob[@]}"; do
-echo "$samp","${sample2loosejob["$samp"]}" >> $OUT_DIR/tmp.loose_jobs
-done
+ALL_JIDS=$(cat output/tmp.all_jids | awk 'ORS=","')
+qsub -wd $OUT_DIR -hold_jid $ALL_JIDS job_scripts/final_reports.sh
+#for samp in "${!sample2bamjob[@]}"; do
+#echo "$samp","${sample2bamjob["$samp"]}" >> $TMP_SAMPLE_JIDS
+#done
+#for samp in "${!pooled2bamjob[@]}"; do
+#echo "$samp","${pooled2bamjob["$samp"]}" >> $TMP_POOL_JIDS
+#done
+#for samp in "${!sample2loose[@]}"; do
+#echo "$samp","${sample2loose["$samp"]}" >> $OUT_DIR/tmp.loose_peaks
+#done
+#for samp in "${!sample2loosejob[@]}"; do
+#echo "$samp","${sample2loosejob["$samp"]}" >> $OUT_DIR/tmp.loose_jobs
+#done
 
 #associative arrays cannot be exported
 #export $sample2bamjob
