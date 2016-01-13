@@ -21,4 +21,8 @@ echo control file - $c
 echo method - $met
 OUT=$WD/$(basename $t)
 OUT="${OUT/_treat_pileup.bdg/}"_"$met".bdg
-macs2 bdgcmp -t $t -c $c -m $met -o $OUT
+if [ -f $OUT ]; then
+	echo skipping bdgcmp for "$t", file "$OUT" exists
+else
+	macs2 bdgcmp -t $t -c $c -m $met -o $OUT
+fi

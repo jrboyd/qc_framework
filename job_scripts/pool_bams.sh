@@ -18,8 +18,10 @@ echo pooling $bams to $pooled
 bams=${bams//";"/" "}
 topool=( $bams )
 cmd="no command set"
-
-if [ ${#topool[@]} -eq 1 ]; then
+if [ -f $pooled ]; then
+	#echo pooled file already present, please verify $pooled is complete.
+	cmd="echo $pooled already exists, check for completeness"
+elif [ ${#topool[@]} -eq 1 ]; then
         echo pooling not necessary, just link for $bams to $pooled
 	cmd="ln $bams $pooled"
 else
@@ -29,11 +31,15 @@ fi
 echo CMD is "$cmd"
 $cmd
 for tp in ${topool[@]}; do
-echo $tp
+	echo $tp
 done
 echo pooling finished into $pooled
-echo indexing $pooled
-samtools index $pooled
+if [ -f "$pooled".bai ]; then
+	echo indexing not necessary, already done
+else
+	echo indexing $pooled
+	samtools index $pooled
+fi
 ls -lha $pooled*
 echo done
 #echo "$INPUT" > $pooled

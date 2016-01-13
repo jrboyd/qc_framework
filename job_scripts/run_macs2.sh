@@ -37,7 +37,12 @@ then
 fi
 
 #model is disabled for testing on small files!
-#macs2 callpeak -t $TREAT_BAM -c $INPUT_BAM -g hs --outdir $OUTDIR -n "$PREFIX" -s 101 --bw 375 -p $PVAL --bdg --to-large
+if [ -f $PREFIX"_peaks.narrowPeak" ]; then
+	echo $PREFIX"_peaks.narrowPeak" exists. macs2 has already been run for $TREAT_BAM.
+	echo delete $PREFIX"_peaks.narrowPeak" if you want to rerun macs2.
+else
+	macs2 callpeak -t $TREAT_BAM -c $INPUT_BAM -g hs --outdir $OUTDIR -n "$PREFIX" -s 101 --bw 375 -p $PVAL --bdg --to-large
+fi
 
-macs2 callpeak -t $TREAT_BAM -c $INPUT_BAM -g hs --outdir $OUTDIR -n "$PREFIX" -s 101 --bw 375 -p $PVAL --bdg --to-large --nomodel --extsize 147
+#macs2 callpeak -t $TREAT_BAM -c $INPUT_BAM -g hs --outdir $OUTDIR -n "$PREFIX"_nomodel -s 101 --bw 375 -p $PVAL --bdg --to-large --nomodel --extsize 147
 

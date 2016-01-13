@@ -13,4 +13,9 @@ fi
 echo input - $inputBedGraph
 echo chrSizes - $inputChromSizes
 echo output - $outputBigWig
-bedGraphToBigWig $inputBedGraph $inputChromSizes $outputBigWig
+if [ -f $outputBigWig ]; then
+	echo file $outputBigWig exists so bdg2bw not necessary for $inputBegGraph
+	echo nothing done.
+else
+	bedGraphToBigWig $inputBedGraph $inputChromSizes $outputBigWig
+fi

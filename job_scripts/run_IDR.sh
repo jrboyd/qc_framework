@@ -21,7 +21,8 @@ if [ -z $PREFIX ] || [ ! -d $OUTDIR ]; then
         exit 1
 fi
 
-
+rand=$(date +%N | sed -e 's/000$//' -e 's/^0//')
+PREFIX="$PREFIX"_"$rand"
 
 
 isBroad=F

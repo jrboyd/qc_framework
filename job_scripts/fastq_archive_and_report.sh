@@ -21,25 +21,33 @@ echo no REPORT set! stop
 exit 1
 fi
 
+if [ -f $RAW.gz ]; then
+	echo archive $RAW.gz exists so skip archiving $RAW
+else
+	echo gzip file $RAW to $RAW.gz
+	gzip -c $RAW > $RAW.gz
+fi
+if [ -f $REPORT ]; then
+	echo skip reporting, $REPORT exists for $RAW, please check for completeness
+else
+	checksum=$(md5sum $RAW.gz | cut -d " " -f 1)
+	function nreads ()
+	{
+		n=$(wc -l $1)
+		n=$(echo $n | cut -d " " -f 1)
+		echo $(( $n / 4))
+	}
+	raw_reads=$(nreads $RAW)
+	tc_reads=$(nreads $TC)
+	echo name $(basename $RAW) > $REPORT
+	echo gz_filename $RAW.gz >> $REPORT
+	echo gz_md5sum $checksum >> $REPORT
+	echo raw_reads $raw_reads >> $REPORT
+	echo tc_reads $tc_reads >> $REPORT
 
-echo gzip file $RAW to $RAW.gz
-gzip -c $RAW > $RAW.gz
-checksum=$(md5sum $RAW.gz | cut -d " " -f 1)
-function nreads ()
-{
-	n=$(wc -l $1)
-	n=$(echo $n | cut -d " " -f 1)
-	echo $(( $n / 4))
-}
-raw_reads=$(nreads $RAW)
-tc_reads=$(nreads $TC)
-echo name $(basename $RAW) > $REPORT
-echo gz_filename $RAW.gz >> $REPORT
-echo gz_md5sum $checksum >> $REPORT
-echo raw_reads $raw_reads >> $REPORT
-echo tc_reads $tc_reads >> $REPORT
+	echo archived $RAW and reported to $REPORT
+fi
 
-echo archived $RAW and reported to $REPORT
 echo running fastqc
 #copied from galaxy env.sh for fastqc
 PATH=/slipstream/galaxy/production/dependencies/FastQC/0.11.2/devteam/package_fastqc_0_11_2/4b65f6e39cb0:$PATH; export PATH

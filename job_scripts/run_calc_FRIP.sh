@@ -31,6 +31,11 @@ fi
 
 if [ -z $OUT_FILE ]; then
 OUT_FILE=${bam_file/.bam/""}"_FRIP.txt"
+if [ -f $OUT_FILE ]; then
+	echo frip output file $OUT_FILE exists so assume not needed. delete $OUT_FILE and resubmit if you want to rerun.
+	exit 0
+fi
+
 echo output will be in $OUT_FILE
 fi
 echo bam_file is $bam_file
@@ -51,4 +56,5 @@ fi
 echo total is $total
 frip=$(echo "$in_peak $total" | awk '{printf "%.4f \n", $1/$2}')
 echo $key $in_peak $total $frip
-echo $key $in_peak $total $frip >> $OUT_FILE
+#echo name reads_in_peak total_reads frip > $OUT_FILE
+echo $key $in_peak $total $frip > $OUT_FILE

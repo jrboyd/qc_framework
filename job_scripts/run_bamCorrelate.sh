@@ -23,8 +23,9 @@ fi
 
 bams=${BAMS//";"/" "}
 bams_array=( $bams )
+rand=$(date +%N | sed -e 's/000$//' -e 's/^0//')
 #bamCorrelate min args are "bamCorrelate bins ---bamfiles file1.bam file2.bam --corMethod spearman -o heatmap.png"
-cmd="bamCorrelate bins --bamfiles $bams --corMethod spearman -o $OUTDIR/bamCorrelate_heatmap.pdf  --outFileCorMatrix $OUTDIR/bamCorrelate_values.txt --plotFileFormat pdf"
+cmd="bamCorrelate bins --bamfiles $bams --corMethod spearman -o $OUTDIR/bamCorrelate_heatmap_"$rand".pdf  --outFileCorMatrix $OUTDIR/bamCorrelate_values_"$rand".txt --plotFileFormat pdf"
 echo CMD is "$cmd"
 $cmd
 for b in ${bams_array[@]}; do

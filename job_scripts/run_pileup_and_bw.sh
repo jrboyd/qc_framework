@@ -21,6 +21,10 @@ fi
 
 BDG=${BAM/.bam/.bdg}
 BW=${BAM/.bam/.bw}
-macs2 pileup -i $BAM -o $BDG
-bedGraphToBigWig $BDG $CHRM_SIZES $BW
+if [ -f $BW ]; then
+	echo pileup file $BW exists, skipping pileup and bw conversion for $BAM
+else
+	macs2 pileup -i $BAM -o $BDG
+	bedGraphToBigWig $BDG $CHRM_SIZES $BW
+fi
 

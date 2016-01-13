@@ -32,11 +32,20 @@ ls -lha $ANNOT_DIR/*
 
 PT=$(echo $PEAKS | awk 'BEGIN {FS="[_.]"} {print $NF}')
 
-f=$PEAKS	
-if [ ! -e $f ]; then
-echo $f does not exist! quit
+if [ ! -e $PEAKS ]; then
+echo $PEAKS does not exist! quit
 fi
-in_f=$f
+f=$PEAKS
+
+outdir=$(dirname $f)/peaks_by_location
+if [ -d $outdir ]; then
+	echo $outdir exists so assuming job does not need to be run.
+	echo please check for completeness and delete $outdir to rerun.
+	exit 0
+fi
+mkdir $outdir
+f=$outdir/$(basename $f) #all outputs appear in subdirectory
+in_f=$PEAKS
 pos_f=${f/.$PT/.promoters.out.$PT}
 neg_f=${f/.$PT/.not_promoters.tmp.$PT} #intermediate file, complements output
 bedtools intersect -u -f 0.5 -wa -a $in_f -b $PR_ANNOT > $pos_f 
