@@ -1,0 +1,10 @@
+in_dir=/slipstream/galaxy/uploads/working/qc_framework
+out_dir=/slipstream/galaxy/uploads/working/qc_framework/output
+head_MCF10A_H3K4AC_R1_06202013.fastq,MCF10A,H3K4AC,R1
+head_MCF10A_H3K4AC_R2_03112014.fastq,MCF10A,H3K4AC,R2
+head_MCF10A_input_R1_03182013.fastq,MCF10A,input,R1
+head_MCF10A_input_R2_06202013.fastq,MCF10A,input,R2
+head_MCF7_H3K4AC_R1_06032013.fastq,MCF7,H3K4AC,R1
+head_MCF7_H3K4AC_R2_03112014.fastq,MCF7,H3K4AC,R2
+head_MCF7_input_R1_03182013.fastq,MCF7,input,R1
+
