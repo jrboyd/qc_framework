@@ -25,11 +25,13 @@ OUT_DIR=$(head -n 2 $CFG | tail -n 1 | awk 'BEGIN {FS="="} {print $2}')
 if [ -d $OUT_DIR ]
 then
     while true; do
-        read -p "$OUT_DIR exists, should it be removed and overwritten? all previous qc_framework jobs will be deleted. script will exit if no." yn
+        read -p "$OUT_DIR exists, should it be [delete]d, [m]odified, [k]ill jobs from old submission and exit, or do [n]othing? modify will only rerun jobs whose output does not exists (including partial outputs from aborted jobs!). previous jobs will be killed" yn
         case $yn in
-            [Yy]* ) if [ -f $OUT_DIR/tmp.all_jids ]; then echo clearing old jobs; all_jids=( $(cat $OUT_DIR/tmp.all_jids | awk 'ORS=" "') ); for jid in ${all_jids[@]}; do hidden=$(qdel $jid); done; fi; rm -r $OUT_DIR; mkdir $OUT_DIR; break;;
-            [Nn]* ) exit;;
-            * ) echo "Please answer yes or no.";;
+            delete ) if [ -f $OUT_DIR/tmp.all_jids ]; then echo clearing old jobs; all_jids=( $(cat $OUT_DIR/tmp.all_jids | awk 'ORS=" "') ); for jid in ${all_jids[@]}; do hidden=$(qdel $jid); done; fi; rm -r $OUT_DIR; mkdir $OUT_DIR; break;;
+            [mM]* )  if [ -f $OUT_DIR/tmp.all_jids ]; then echo clearing old jobs; all_jids=( $(cat $OUT_DIR/tmp.all_jids | awk 'ORS=" "') ); for jid in ${all_jids[@]}; do hidden=$(qdel $jid); done; fi; break;;
+	    [kK]* )  if [ -f $OUT_DIR/tmp.all_jids ]; then echo clearing old jobs; all_jids=( $(cat $OUT_DIR/tmp.all_jids | awk 'ORS=" "') ); for jid in ${all_jids[@]}; do hidden=$(qdel $jid); done; fi; exit;;
+	    [nN]* )  exit;;
+            * ) echo "Please answer m, k, n, or delete.";;
         esac
     done
 fi
