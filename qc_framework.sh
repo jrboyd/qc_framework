@@ -38,6 +38,7 @@ fi
  #       echo $OUT_DIR does not exist, creating
 #	mkdir $OUT_DIR
         OUT_DIR=$(readlink -f $OUT_DIR)
+cp $CFG $OUT_DIR/
 #fi
 #some useful global functions and variabls
 export LOG_FILE=$OUT_DIR/samples.log

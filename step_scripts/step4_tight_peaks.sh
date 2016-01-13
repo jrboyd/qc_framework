@@ -40,29 +40,29 @@ log "     step4 continues"
 
 #create input normalized FE bw track
 WD=$OUTDIR
-TREATMENT=$OUTDIR/*treat_pileup.bdg
-CONTROL=$OUTDIR/*control_lambda.bdg
+TREATMENT=$OUTDIR/$PREFIX"_treat_pileup.bdg"
+CONTROL=$OUTDIR/$PREFIX"_control_lambda.bdg"
 METHOD=logFE
 qsub_out2=$(qsub -v WD=$WD,TREATMENT=$TREATMENT,CONTROL=$CONTROL,METHOD=$METHOD -wd $OUTDIR -hold_jid $jid job_scripts/run_bdgcmp.sh)
 jid_cmp=$(parse_jid "$qsub_out2")
 
-inputBedGraph=$OUTDIR/*logFE.bdg
+inputBedGraph=$OUTDIR/$PREFIX"_logFE.bdg"
 inputChromSizes=/slipstream/galaxy/uploads/working/hg38.chrom.sizes
-outputBigWig=$OUTDIR/"$PREFIX"_logFE.bw
+outputBigWig=$OUTDIR/$PREFIX"_logFE.bw"
 qsub_out3=$(qsub -v inputBedGraph=$inputBedGraph,inputChromSizes=$inputChromSizes,outputBigWig=$outputBigWig  -wd $OUTDIR -hold_jid $jid_cmp job_scripts/run_bdg2bw.sh)
 hidden=$(parse_jid "$qsub_out3") #not used but records jid
 
 #calc FRIP
 #bam_file
 #peak_file
-qsub_out4=$(qsub -v bam_file=$TREAT_BAM,peak_file=$OUTDIR/$PREFIX*peaks.narrowPeak -wd $OUTDIR -hold_jid $jid job_scripts/run_calc_FRIP.sh)
+qsub_out4=$(qsub -v bam_file=$TREAT_BAM,peak_file=$OUTDIR/$PREFIX"_peaks.narrowPeak" -wd $OUTDIR -hold_jid $jid job_scripts/run_calc_FRIP.sh)
 hidden=$(parse_jid "$qsub_out4") 
 
 #intersect with feature types
 #PEAKS
 #ANNOT_DIR
 ANNOT_DIR=/slipstream/galaxy/uploads/working/qc_framework/ref/hg38
-PEAKS=$(echo "$OUTDIR"/"$PREFIX"_peaks.narrowPeak)
+PEAKS=$(echo $OUTDIR/$PREFIX"_peaks.narrowPeak")
 qsub_out5=$(qsub -v PEAKS=$PEAKS,ANNOT_DIR=$ANNOT_DIR -wd $OUTDIR -hold_jid $jid job_scripts/run_annotation_intersects.sh)
 hidden=$(parse_jid "$qsub_out5")
 
