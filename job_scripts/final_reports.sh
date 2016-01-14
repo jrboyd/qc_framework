@@ -1,7 +1,12 @@
 #!/bin/bash
+#$ -o final_report."$JOB_ID".out
+#$ -e final_report."$JOB_ID".error
+
+
+echo writing report for output in $(pwd)
 RPT=final_report.txt
 echo all jobs done > $RPT
-echo finished at $(date) > $RPT
+echo finished at $(date) >> $RPT
 echo reporting peaks...
 LOOSE=loose_rep_peak_counts.txt
 TIGHT=tight_rep_peak_counts.txt
@@ -18,6 +23,7 @@ else
 fi; done
 echo truncating pooled peaks by IDR
 for f in */*_IDR.npeaks-aboveIDR.txt; do
+	echo $f ...
 	thresh=$(cat $f | awk '{if (NR == 5) print $4}')
 	echo npeaks passing is $thresh
 	peaks=${f/_IDR.npeaks-aboveIDR.txt/_pooled_peaks.narrowPeak}

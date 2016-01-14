@@ -47,7 +47,7 @@ qsub_out2=$(qsub -v WD=$WD,TREATMENT=$TREATMENT,CONTROL=$CONTROL,METHOD=$METHOD 
 jid_cmp=$(parse_jid "$qsub_out2")
 
 inputBedGraph=$OUTDIR/$PREFIX"_logFE.bdg"
-inputChromSizes=/slipstream/galaxy/uploads/working/hg38.chrom.sizes
+inputChromSizes=/slipstream/galaxy/uploads/working/qc_framework/hg38.chrom.sizes
 outputBigWig=$OUTDIR/$PREFIX"_logFE.bw"
 qsub_out3=$(qsub -v inputBedGraph=$inputBedGraph,inputChromSizes=$inputChromSizes,outputBigWig=$outputBigWig  -wd $OUTDIR -hold_jid $jid_cmp job_scripts/run_bdg2bw.sh)
 hidden=$(parse_jid "$qsub_out3") #not used but records jid

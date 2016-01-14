@@ -36,10 +36,8 @@ then
     done
 fi
 
-#if [ ! -d $OUT_DIR ]; then
- #       echo $OUT_DIR does not exist, creating
-#	mkdir $OUT_DIR
-        OUT_DIR=$(readlink -f $OUT_DIR)
+OUT_DIR=$(readlink -f $OUT_DIR)
+rm $OUT_DIR/tmp*
 cp $CFG $OUT_DIR/
 #fi
 #some useful global functions and variabls
@@ -145,7 +143,12 @@ while [ $i -lt ${#RAW[@]} ]; do
 		mkdir $OUT_DIR/$sample_id
 		input=$OUT_DIR/$sample_id/$sample_id.fastq
 		input_bam=${input/.fastq/.bam}
-		ln ${RAW[$i]} $input
+		if [ -f $input ]; then
+			echo $input is staged already
+		else
+			ln ${RAW[$i]} $input
+			echo ${RAW[$i]} staged to $input
+		fi
 		bam_job_id=$(bash qc_rep_runner.sh $input)
 		sample2bamjob[$sample_id]=$bam_job_id
 		sample2bam[$sample_id]=$input_bam

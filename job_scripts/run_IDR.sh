@@ -21,9 +21,12 @@ if [ -z $PREFIX ] || [ ! -d $OUTDIR ]; then
         exit 1
 fi
 
-rand=$(date +%N | sed -e 's/000$//' -e 's/^0//')
-PREFIX="$PREFIX"_"$rand"
-
+#rand=$(date +%N | sed -e 's/000$//' -e 's/^0//')
+#PREFIX="$PREFIX"_"$rand"
+if [ -f $PREFIX.npeaks-aboveIDR.txt ]; then
+	echo file $PREFIX.npeaks-aboveIDR.txt exists so skip IDR.  deleted this file to run.
+	exit 0
+fi
 
 isBroad=F
 SCRIPT_DIR=/slipstream/galaxy/production/toolshed-repositories/toolshed.g2.bx.psu.edu/repos/modencode-dcc/idr_package/6f6a9fbe264e/idr_package
