@@ -140,7 +140,9 @@ while [ $i -lt ${#RAW[@]} ]; do
 	sample_id=$(head -n $(( $i + 1 )) $TMP_SAMPLE | tail -n 1)
 	if echo $sample_id | grep -iq input; then
     		echo $sample_id
-		mkdir $OUT_DIR/$sample_id
+		if [ ! -d $OUT_DIR/$sample_id ]; then
+			mkdir $OUT_DIR/$sample_id
+		fi
 		input=$OUT_DIR/$sample_id/$sample_id.fastq
 		input_bam=${input/.fastq/.bam}
 		if [ -f $input ]; then
@@ -176,7 +178,9 @@ for key in ${b[@]}; do
 			topool_jobs=$topool_jobs","${sample2bamjob["$samp"]}
 		fi
 	done
-	mkdir $OUT_DIR/$pooled_name
+	if [ ! -d $OUT_DIR/$pooled_name ]; then
+		mkdir $OUT_DIR/$pooled_name
+	fi
 	topool_jobs=${topool_jobs/","/""} #remove leading comma
 	poolstr=${topool[@]}
 	poolstr=${poolstr//" "/";"} #fill whitespace
