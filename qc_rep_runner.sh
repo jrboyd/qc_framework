@@ -7,10 +7,10 @@
 log "--start rep_runner"
 RAW_F=$1
 TC_F=${RAW_F/.fastq/.tc.fastq}
-tc_job=$(bash step_scripts/step1*.sh $RAW_F $TC_F)
+BAM_F=${RAW_F/.fastq/.bam}
+tc_job=$(bash step_scripts/step1*.sh $RAW_F $TC_F $BAM_F)
 log "  step2 jobs will wait for $tc_job to complete" # >> $LOG_FILE
 #log "step2 go"
-BAM_F=${RAW_F/.fastq/.bam}
 bam_job=$(bash step_scripts/step2*.sh $TC_F $BAM_F $tc_job)
 echo $bam_job
 

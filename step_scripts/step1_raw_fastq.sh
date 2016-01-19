@@ -3,6 +3,7 @@
 #arg2 is name of trimcut fastq file to be generated
 input=$1
 output=$2
+bam=$3
 if [ -z $input ]; then
 log "arg1 should be input but was blank! stop"
 exit 1
@@ -15,6 +16,10 @@ if [ -z $output ]; then
 log "arg2 should be output but was blank! stop"
 exit 1
 fi
+if [ -z $bam ]; then
+log "arg3 should be bam but was blank! stop"
+exit 1
+fi
 
 
 
@@ -24,7 +29,7 @@ OUTDIR=$(dirname $output)
 log "--- starting step 1"
 log "    input is $input"
 log "    output is $output"
-JOB1=$(qsub -v INPUT=$input,OUTPUT=$output -wd $OUTDIR job_scripts/fastq2trimcut_fastq.sh) #add file here
+JOB1=$(qsub -v INPUT=$input,OUTPUT=$output,BAM=$bam -wd $OUTDIR job_scripts/fastq2trimcut_fastq.sh) #add file here
 #returns whole line
 #JOBID=$(awk -v RS=[0-9]+ '{print RT+0;exit}' <<< "$JOB1") #returns JOBID
 JOBID=$(parse_jid "$JOB1")

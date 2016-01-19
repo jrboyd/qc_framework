@@ -33,7 +33,7 @@ log "--- step 2 finished"
 log "    JOBID for step 3 is $JOBID"
 log "    step 2 continues"
 #every rep bam file gets pileup bw generated
-chrm_sizes=/slipstream/galaxy/uploads/working/hg38.chrom.sizes
+chrm_sizes=/slipstream/galaxy/uploads/working/qc_framework/hg38.chrom.sizes
 JOB2=$(qsub -wd $OUTDIR -v BAM=$output,CHRM_SIZES=$chrm_sizes -hold_jid $JOBID job_scripts/run_pileup_and_bw.sh)
 hidden=$(parse_jid "$JOB2") 
 #cd $SRCDIR

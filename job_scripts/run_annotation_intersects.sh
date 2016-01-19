@@ -33,7 +33,8 @@ ls -lha $ANNOT_DIR/*
 PT=$(echo $PEAKS | awk 'BEGIN {FS="[_.]"} {print $NF}')
 
 if [ ! -e $PEAKS ]; then
-echo $PEAKS does not exist! quit
+	echo $PEAKS does not exist! quit
+	exit 1
 fi
 f=$PEAKS
 

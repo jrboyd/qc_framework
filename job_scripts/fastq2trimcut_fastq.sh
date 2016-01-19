@@ -15,12 +15,19 @@ if [ -z $OUTPUT ]; then
 echo no OUTPUT set! stop
 exit 1
 fi
+if [ -z $BAM ]; then
+echo no BAM set to check for! job will run
+fi
 
 echo INPUT raw fastq is $INPUT
 echo intermeidate cutadapt is "$INPUT".cutadapt.tmp
 echo OUTPUT tc fastq is $OUTPUT
 if [ -f $OUTPUT ]; then
 	echo $OUTPUT exists already, skipping trim cut for $INPUT
+elif [ ! -z $BAM ]; then
+	if [ -f $BAM ]; then
+		echo $BAM bam file exists, skipping trim cut for $INPUT
+	fi
 else
 	echo trimming file $INPUT
 	PYTHONPATH=/slipstream/galaxy/production/dependencies/galaxy_sequence_utils/1.0.0/devteam/package_galaxy_utils_1_0/0643676ad5f7/lib/python:$PYTHONPATH; export PYTHONPATH
@@ -29,5 +36,10 @@ else
 fi
 #cp $INPUT $OUTPUT #placeholder 
 #echo trimming file $INPUT
-
-echo trimcut file is written to $OUTPUT
+if [ -f $OUTPUT ]; then
+	echo trimcut file is written to $OUTPUT
+elif [ -f $BAM ]; then
+	echo no trimcut file created.  $BAM bam file exists.
+else
+	echo something went wrong with $INPUT, no output detected.
+fi
