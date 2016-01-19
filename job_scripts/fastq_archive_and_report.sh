@@ -48,7 +48,6 @@ else
 	echo archived $RAW and reported to $REPORT
 fi
 
-echo running fastqc
 #copied from galaxy env.sh for fastqc
 PATH=/slipstream/galaxy/production/dependencies/FastQC/0.11.2/devteam/package_fastqc_0_11_2/4b65f6e39cb0:$PATH; export PATH
 FASTQC_JAR_PATH=/slipstream/galaxy/production/dependencies/FastQC/0.11.2/devteam/package_fastqc_0_11_2/4b65f6e39cb0; export FASTQC_JAR_PATH
@@ -56,5 +55,11 @@ FASTQC_JAR_PATH=/slipstream/galaxy/production/dependencies/FastQC/0.11.2/devteam
 #fastqc_dir=$(dirname $TC)/fastqc_files
 #fastqc_f="$TC".fastq_report
 #mkdir $fastqc_dir
-fastqc --quiet --extract $TC
+qc_out=${TC/.fastq/_fastqc}
+if [ -d $qc_out ]; then 
+	echo skip fastqc, $qc_out exists for $TC, please check for completeness
+else
+	echo running fastqc, output to $qc_out
+	fastqc --quiet --extract $TC
+fi
 #python /slipstream/galaxy/uploads/working/qc_framework/job_scripts/rgFastQC.py -i "$TC" -o "$fastqc_f.html" -t "$fastqc_f.txt" -f "fastqsanger" -j "$TC" -e "$FASTQC_JAR_PATH/fastqc"

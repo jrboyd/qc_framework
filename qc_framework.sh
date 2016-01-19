@@ -163,11 +163,12 @@ done
 a=( $(cat $OUT_DIR/tmp.sample_ids) )
 b=( $(cat $OUT_DIR/tmp.pooled_ids | sort | uniq) )
 for key in ${b[@]}; do
-	echo $key
+	#echo $key
 	pooled_name="$key"_pooled
 	if ! $(echo $key | grep -iq input); then
         	continue
 	fi
+	echo $key
 	topool=()
 	topool_jobs=""
 	for samp in ${a[@]}; do
@@ -206,7 +207,12 @@ while [ $i -lt ${#RAW[@]} ]; do
 		fi
                 treat=$OUT_DIR/$sample_id/$sample_id.fastq
 		treat_bam=${treat/.fastq/.bam}
-                ln ${RAW[$i]} $treat
+		if [ -f $treat ]; then
+                        echo $treat is staged already
+                else
+                        ln ${RAW[$i]} $treat
+                        echo ${RAW[$i]} staged to $treat
+                fi
 		#match sample to appropriate pooled input
 		key=$(echo $sample_id | rev | cut -d _ -f 3- | rev)
 		input=""
@@ -230,11 +236,12 @@ while [ $i -lt ${#RAW[@]} ]; do
 done
 #pool noninput bams, submit at the same time
 for key in ${b[@]}; do
-        echo $key
+        #echo $key
 	pooled_name="$key"_pooled
         if $(echo $key | grep -iq input); then
                 continue
         fi
+	echo $key
 	if [ ! -d $OUT_DIR/$pooled_name ]; then
 		mkdir $OUT_DIR/$pooled_name
 	fi
@@ -275,7 +282,7 @@ for key in ${b[@]}; do
         input_jid="${pooled2bamjob["$input"]}"
 	inputtreatpoooled=$pool_job_id,$input_jid
 	input_bam=$OUT_DIR/$input/$input".bam"
-	echo waiting for bam pool jobs $inputtreatpoooled to run macs with $pooled_bam";"$input_bam $key:$inkey
+	#echo waiting for bam pool jobs $inputtreatpoooled to run macs with $pooled_bam";"$input_bam $key:$inkey
         #fi
 	poolpeaks_job_id=$(bash qc_pool_runner.sh $inputtreatpoooled $pooled_bam";"$input_bam)
 	pooled2peak["$pooled_name"]="$pooled_name"_peaks.narrowPeak
