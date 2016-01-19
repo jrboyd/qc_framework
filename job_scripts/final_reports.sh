@@ -31,4 +31,7 @@ for f in */*_IDR.npeaks-aboveIDR.txt; do
 	sort -nr -k 8,8 $peaks | head -n $thresh | sort -n -k 2 | sort -k 1,1V -k 2,2n > $trunc
 done
 
+echo cleaning up bdg files where bw have been made
+ls -lha */*bw
+ls -lha */*bdg
 	

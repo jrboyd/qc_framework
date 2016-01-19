@@ -201,7 +201,9 @@ while [ $i -lt ${#RAW[@]} ]; do
         sample_id=$(head -n $(( $i + 1 )) $TMP_SAMPLE | tail -n 1)
         if ! echo $sample_id | grep -iq input; then
                 echo $sample_id
-		mkdir $OUT_DIR/$sample_id
+		if [ ! -d $OUT_DIR/$sample_id ]; then
+			mkdir $OUT_DIR/$sample_id
+		fi
                 treat=$OUT_DIR/$sample_id/$sample_id.fastq
 		treat_bam=${treat/.fastq/.bam}
                 ln ${RAW[$i]} $treat
@@ -233,7 +235,9 @@ for key in ${b[@]}; do
         if $(echo $key | grep -iq input); then
                 continue
         fi
-	mkdir $OUT_DIR/$pooled_name
+	if [ ! -d $OUT_DIR/$pooled_name ]; then
+		mkdir $OUT_DIR/$pooled_name
+	fi
         topool=()
         topool_jobs=""
         for samp in ${a[@]}; do
