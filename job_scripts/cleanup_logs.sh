@@ -23,6 +23,7 @@ for d in *
       #do echo $f
 	if [ -f $f ]; then
 	 new=${f/"/"/"_"}
+	 new=$(basename $new)
          mv $f $LOGS/$new
 	fi
 done; done; fi; 

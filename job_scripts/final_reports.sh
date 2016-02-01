@@ -2,7 +2,18 @@
 #$ -o final_report."$JOB_ID".out
 #$ -e final_report."$JOB_ID".error
 
-
+if [ -z $OUT_DIR ]; then
+	OUT_DIR=$1
+fi
+if [ -z $OUT_DIR ]; then
+	echo "no OUT_DIR (arg 1) supplied, stop"
+	exit 1
+fi
+if [ ! -d $OUT_DIR ]; then 
+	echo OUT_DIR $OUT_DIR does not exist, stop
+	exit 1
+fi
+cd $OUT_DIR
 echo writing report for output in $(pwd)
 RPT=final_report.txt
 echo all jobs done > $RPT
@@ -34,4 +45,9 @@ done
 echo cleaning up bdg files where bw have been made
 ls -lha */*bw
 ls -lha */*bdg
-	
+for bw in */*bw; do bdg=${bw/.bw/.bdg}; if [ -f $bdg ]; then echo rm $bdg; rm $bdg ;fi; done	
+echo cleaning up fastq files where bam have been made
+for bam in */*gz; do for key in .fastq; do fastq=${bam/.gz/""}; if [ -f $fastq ]; then echo rm $fastq; rm $fastq; fi; done; done
+for bam in */*bam; do for key in .tc.fastq .fastq.cutadapt.tmp; do fastq=${bam/.bam/$key}; if [ -f $fastq ]; then echo rm $fastq; rm $fastq; fi; done; done
+#.cutadapt.tmp
+#.tc.fastq

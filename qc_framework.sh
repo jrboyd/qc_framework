@@ -9,15 +9,16 @@ if [ -z $CFG ]; then
 fi
 CFG=$(readlink -f $CFG)
 if [ ! -e $CFG ]; then
-	echo $CFG config file not found! stop
+	echo $CFG CFG config file not found! stop
 	exit 1
 fi
 echo loading config file $CFG
 #parse first line as input directory
 IN_DIR=$(head -n 1 $CFG | awk 'BEGIN {FS="="} {print $2}')
 IN_DIR=$(readlink -f $IN_DIR)
-if [ ! -d $IN_DIR ]; then
-	echo $IN_DIR does not exist! stop
+echo IN_DIR is \"$IN_DIR\"
+if [ ! -d "$IN_DIR" ]; then
+	echo IN_DIR does not exist! stop
 	exit 1
 fi
 #parse second line as working/output directory
@@ -148,8 +149,8 @@ while [ $i -lt ${#RAW[@]} ]; do
 		if [ -f $input ]; then
 			echo $input is staged already
 		else
-			ln ${RAW[$i]} $input
-			echo ${RAW[$i]} staged to $input
+			echo staging ${RAW[$i]} to $input
+			ln $IN_DIR/${RAW[$i]} $input
 		fi
 		bam_job_id=$(bash qc_rep_runner.sh $input)
 		sample2bamjob[$sample_id]=$bam_job_id
@@ -210,8 +211,8 @@ while [ $i -lt ${#RAW[@]} ]; do
 		if [ -f $treat ]; then
                         echo $treat is staged already
                 else
-                        ln ${RAW[$i]} $treat
-                        echo ${RAW[$i]} staged to $treat
+			echo staging ${RAW[$i]} to $treat
+                        ln $IN_DIR/${RAW[$i]} $treat
                 fi
 		#match sample to appropriate pooled input
 		key=$(echo $sample_id | rev | cut -d _ -f 3- | rev)
@@ -347,7 +348,7 @@ for samp in "${!pooled2peak[@]}"; do
 done
 
 ALL_JIDS=$(cat output/tmp.all_jids | awk 'ORS=","')
-qsub -wd $OUT_DIR -hold_jid $ALL_JIDS job_scripts/final_reports.sh
+qsub -wd $OUT_DIR -hold_jid $ALL_JIDS -v OUT_DIR=$OUT_DIR job_scripts/final_reports.sh
 #for samp in "${!sample2bamjob[@]}"; do
 #echo "$samp","${sample2bamjob["$samp"]}" >> $TMP_SAMPLE_JIDS
 #done
