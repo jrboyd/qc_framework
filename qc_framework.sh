@@ -12,9 +12,11 @@ if [ ! -e $CFG ]; then
 	echo $CFG CFG config file not found! stop
 	exit 1
 fi
+dos2unix $CFG
 echo loading config file $CFG
 #parse first line as input directory
 IN_DIR=$(head -n 1 $CFG | awk 'BEGIN {FS="="} {print $2}')
+IN_DIR=$(echo $IN_DIR | awk 'BEGIN {FS=","} {print $1}')
 IN_DIR=$(readlink -f $IN_DIR)
 echo IN_DIR is \"$IN_DIR\"
 if [ ! -d "$IN_DIR" ]; then
@@ -23,6 +25,7 @@ if [ ! -d "$IN_DIR" ]; then
 fi
 #parse second line as working/output directory
 OUT_DIR=$(head -n 2 $CFG | tail -n 1 | awk 'BEGIN {FS="="} {print $2}')
+OUT_DIR=$(echo $OUT_DIR | awk 'BEGIN {FS=","} {print $1}')
 if [ -d $OUT_DIR ]
 then
     while true; do
@@ -317,7 +320,7 @@ step5_o=$(bash step_scripts/step5*.sh $samp_bams $OUT_DIR $samp_jobs)
 #PREFIX - prefix of output file (name without extension)
 #script is job_scripts/run_IDR.sh
 for samp in "${!pooled2peak[@]}"; do
-	root=$(echo $samp | rev | cut -d "_" -f 2- | rev) 
+	root=$(echo $samp | rev | cut -d "_" -f $NPARAM- | rev) 
 	echo root for IDR $samp:$root
 	if echo $root | grep -iq "input"; then
 		echo skipping $root as input
