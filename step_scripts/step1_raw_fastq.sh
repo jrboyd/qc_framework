@@ -9,8 +9,8 @@ log "arg1 should be input but was blank! stop"
 exit 1
 fi
 if [ ! -e $input ]; then
-log "arg1s $input does not exist! stop"
-exit 1
+log "arg1s $input does not exist."
+#exit 1
 fi
 if [ -z $output ]; then
 log "arg2 should be output but was blank! stop"
@@ -29,6 +29,7 @@ OUTDIR=$(dirname $output)
 log "--- starting step 1"
 log "    input is $input"
 log "    output is $output"
+log "    bam is $bam"
 JOB1=$(qsub -v INPUT=$input,OUTPUT=$output,BAM=$bam -wd $OUTDIR job_scripts/fastq2trimcut_fastq.sh) #add file here
 #returns whole line
 #JOBID=$(awk -v RS=[0-9]+ '{print RT+0;exit}' <<< "$JOB1") #returns JOBID
