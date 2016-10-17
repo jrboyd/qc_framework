@@ -4,9 +4,9 @@
 
 
 #required inputs:
-#TREATMENT
-#CONTROL
-#METHOD
+#TREATMENT - control lambda bdg file from macs2
+#CONTROL - treatment pileup bdg file from macs2
+#METHOD - should probably be logFE, see macs2 bdgcmp help for more options
 WD=$WD
 t=$TREATMENT
 c=$CONTROL

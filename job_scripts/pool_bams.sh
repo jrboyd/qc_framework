@@ -3,8 +3,8 @@
 #$ -e poolbam."$JOB_ID".error
 
 
-#pools to input comma delimited list of bam files into the output file
-#arg 1 is comma separated list of bam files
+#pools to input semi colon delimited list of bam files into the output file
+#arg 1 is semi colon separated list of bam files
 #arg 2 is name of output pooled bam file
 if [ -z $INPUT ]; then
 INPUT=$1
@@ -25,7 +25,7 @@ elif [ ${#topool[@]} -eq 1 ]; then
         echo pooling not necessary, just link for $bams to $pooled
 	cmd="ln $bams $pooled"
 else
-        echo gonna pool $bams into $key.bam
+        echo gonna pool $bams into $pooled
 	cmd="samtools merge $pooled $bams"
 fi
 echo CMD is "$cmd"

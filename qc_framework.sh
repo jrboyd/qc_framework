@@ -58,11 +58,13 @@ declare -Ag pooled2peak
 declare -Ag pooled2peakjob
 function parse_jid () 
 { #parses the job id from output of qsub
+        #echo $1
 	if [[ -z $1 ]]; then
 	echo parse_jid expects output of qsub as first input but input was empty! stop
 	exit 1
 	fi
-	JOBID=$(awk -v RS=[0-9]+ '{print RT+0;exit}' <<< "$1") #returns JOBID	
+	#JOBID=$(awk -v RS=[0-9]+ '{print RT+0;exit}' <<< "$1") #returns JOBID	#original method was dependent on specific awk version apparently for RT variable
+        JOBID=$(echo $1 | awk 'BEGIN {RS=" "} {if ($1 ~ "[0-9]+"){print $1; exit}}') #returns JOBID
 	echo $JOBID >> $ALL_JIDS
 	echo $JOBID
 }
@@ -92,11 +94,12 @@ for f in ${RAW[@]}; do
 echo $f
 if [ ! -e $IN_DIR/$f ]; then
 	echo $ID_DIR/$f does not exist! bad config! stop
-	exit 1
+	#exit 1
 fi
 done
 
 #cocatenate paramters to sample_id, excluded last column (reps) for pooled_ids
+rm $OUT_DIR/tmp*
 TMP_POOL=$OUT_DIR/tmp.pooled_ids
 TMP_SAMPLE=$OUT_DIR/tmp.sample_ids
 TMP_POOL_JIDS=$OUT_DIR/tmp.pooled_jids
@@ -119,6 +122,7 @@ sample_id=${sample_id/_/""}
 pooled_id=$sample_id
 rep=$(tail -n +3 $CFG | awk -v row=$R 'BEGIN {FS=","; OFS=""} {if (NR == row) print $NF}')
 sample_id="$sample_id"_$rep
+echo $pooled_id
 echo $pooled_id >> $TMP_POOL
 echo $sample_id >> $TMP_SAMPLE
 R=$(( $R + 1 ))
@@ -127,10 +131,13 @@ echo input index is $input_index
 #check that all sample_ids are unique, report number of pooled_ids
 total_samples=$(cat $TMP_SAMPLE | wc -l)
 uniq_samples=$(sort $TMP_SAMPLE | uniq | wc -l)
+echo $total_samples
+echo $uniq_samples
 #echo $total_samples $uniq_samples
 if [ $total_samples -ne $uniq_samples ]; then
 	echo all sample ids are not unique! stop
-	cat $TMP_SAMPLE
+	echo repeats are:
+	echo "    "$(uniq --repeated $TMP_SAMPLE)
 	exit 1
 fi
 total_pooled=$(sort $TMP_POOL | uniq | wc -l)
@@ -151,6 +158,8 @@ while [ $i -lt ${#RAW[@]} ]; do
 		input_bam=${input/.fastq/.bam}
 		if [ -f $input ]; then
 			echo $input is staged already
+		elif [ -f $input.gz ]; then
+			echo $input.gz exists, delete if alignment needs to be redone
 		else
 			echo staging ${RAW[$i]} to $input
 			ln $IN_DIR/${RAW[$i]} $input
@@ -213,7 +222,9 @@ while [ $i -lt ${#RAW[@]} ]; do
 		treat_bam=${treat/.fastq/.bam}
 		if [ -f $treat ]; then
                         echo $treat is staged already
-                else
+                elif [ -f $treat.gz ]; then
+                        echo $treat.gz exists, delete if alignment needs to be redone
+		else
 			echo staging ${RAW[$i]} to $treat
                         ln $IN_DIR/${RAW[$i]} $treat
                 fi
@@ -225,6 +236,9 @@ while [ $i -lt ${#RAW[@]} ]; do
                 	input=$samp
         	fi
 		done
+		echo sample_id is $sample_id
+		echo key is $key
+		echo input is $input
 		input_bam=$OUT_DIR/$input/$input".bam"
 		input_jid="${pooled2bamjob["$input"]}"
 		#input=$(echo $sample_id | awk 'BEGIN {FS="_"; OFS="_"} {M=NF-1; $NF=""; $M="input"; print $0}')"pooled.bam"
@@ -274,7 +288,7 @@ for key in ${b[@]}; do
         pooled2bamjob["$pooled_name"]=$pool_job_id
 
 	#match sample to appropriate pooled input
-        inkey=$(echo $key | rev | cut -d _ -f 2- | rev)
+        inkey=$(echo $key | rev | cut -d _ -f 3- | rev)
 #	echo AAAA $inkey AAAA
 	input=""
         for samp in "${!pooled2bamjob[@]}"; do
@@ -320,7 +334,7 @@ step5_o=$(bash step_scripts/step5*.sh $samp_bams $OUT_DIR $samp_jobs)
 #PREFIX - prefix of output file (name without extension)
 #script is job_scripts/run_IDR.sh
 for samp in "${!pooled2peak[@]}"; do
-	root=$(echo $samp | rev | cut -d "_" -f $NPARAM- | rev) 
+	root=$(echo $samp | rev | cut -d "_" -f 2- | rev) 
 	echo root for IDR $samp:$root
 	if echo $root | grep -iq "input"; then
 		echo skipping $root as input
