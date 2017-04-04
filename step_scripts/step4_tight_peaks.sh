@@ -42,7 +42,7 @@ log "     step4 continues"
 WD=$OUTDIR
 TREATMENT=$OUTDIR/$PREFIX"_treat_pileup.bdg"
 CONTROL=$OUTDIR/$PREFIX"_control_lambda.bdg"
-METHOD=logFE
+METHOD=FE
 qsub_out2=$(qsub -v WD=$WD,TREATMENT=$TREATMENT,CONTROL=$CONTROL,METHOD=$METHOD -wd $OUTDIR -hold_jid $jid job_scripts/run_bdgcmp.sh)
 jid_cmp=$(parse_jid "$qsub_out2")
 
