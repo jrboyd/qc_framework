@@ -9,6 +9,7 @@ echo OUTDIR is $OUTDIR
 echo PREFIX is $PREFIX
 echo PVAL is $PVAL
 echo QVAL is $QVAL
+echo BROADCUTOFF is $BROADCUTOFF
 echo GEN is $GEN
 echo macs2 on $(basename $TREAT_BAM):$(basename $INPUT_BAM)
 
@@ -46,6 +47,8 @@ then
 	echo PREFIX $PREFIX missing! stop
 	exit 1
 fi
+
+
 if [ -z $PVAL ]
 then
   if [ -z $QVAL ]; then
@@ -64,28 +67,21 @@ if [ $GEN == "mm10" ] || [ $GEN == "mm9" ]; then
 	g=mm
 elif [ $GEN == "hg38" ] || [ $GEN == "hg19" ] || [ $GEN == "U13369" ]; then
 	g=hs
-elif [ $GEN == "simGenome" ]; then
-        g=100000000
-elif [[ $GEN == *"10M"* ]]; then
-        g=10000000
-elif [[ $GEN == *"1M"* ]]; then
-        g=1000000
-else
-        echo unrecognized genome ${g} !; exit 1
 fi
 
 #model is disabled for testing on small files!
-if [ -f $PREFIX"_peaks.narrowPeak" ]; then
-	echo $PREFIX"_peaks.narrowPeak" exists. macs2 has already been run for $TREAT_BAM.
-	echo delete $PREFIX"_peaks.narrowPeak" if you want to rerun macs2.
+if [ -f $PREFIX"_peaks.broadPeak" ]; then
+	echo $PREFIX"_peaks.broadPeak" exists. macs2 has already been run for $TREAT_BAM.
+	echo delete $PREFIX"_peaks.broadPeak" if you want to rerun macs2.
 elif [[ $GEN == *"simGenome"* ]]; then
-        cmd="macs2 callpeak -t $TREAT_BAM -c $INPUT_BAM -g $g --outdir $OUTDIR -n $PREFIX -$stat $stat_val --bdg --nomodel --extsize 200"
+        cmd="macs2 callpeak -t $TREAT_BAM -c $INPUT_BAM -g $g --outdir $OUTDIR -n $PREFIX -$stat $stat_val --broad --broad-cutoff $BROADCUTOFF --nomodel --extsize 200"
 else
-	cmd="macs2 callpeak -t $TREAT_BAM -c $INPUT_BAM -g $g --outdir $OUTDIR -n $PREFIX -$stat $stat_val --bdg"
+        cmd="macs2 callpeak -t $TREAT_BAM -c $INPUT_BAM -g $g --outdir $OUTDIR -n $PREFIX -$stat $stat_val --broad --broad-cutoff $BROADCUTOFF"
 fi
 echo cmd is:
 echo $cmd
 $cmd
+
 
 #macs2 callpeak -t $TREAT_BAM -c $INPUT_BAM -g hs --outdir $OUTDIR -n "$PREFIX"_nomodel -s 101 --bw 375 -p $PVAL --bdg --to-large --nomodel --extsize 147
 

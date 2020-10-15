@@ -15,6 +15,7 @@ if [ -z $t ]
 	then t=$1
 	c=$2
 	met=$3
+	WD=$(pwd)
 fi
 echo treat file - $t
 echo control file - $c

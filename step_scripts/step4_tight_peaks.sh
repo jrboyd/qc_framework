@@ -9,6 +9,10 @@ fi
 if [ -z $DEP_JIDS ]; then
 DEP_JIDS=$3
 fi
+if [ -z $GEN ]; then
+GEN=$4
+fi
+
 log "---- start step4"
 log "     calling peaks with:"
 #log "logtest"
@@ -19,13 +23,20 @@ PREFIX=$(basename $TREAT_BAM)
 PREFIX=${PREFIX/.bam/""}
 OUTDIR=$(dirname $TREAT_BAM)
 
-qsub_out=$(qsub -v TREAT_BAM=$TREAT_BAM,INPUT_BAM=$INPUT_BAM,PREFIX=$PREFIX,OUTDIR=$OUTDIR,PVAL="1e-5" -wd $OUTDIR -hold_jid $DEP_JIDS job_scripts/run_macs2.sh)
+#qsub_out=$(qsub -v TREAT_BAM=$TREAT_BAM,INPUT_BAM=$INPUT_BAM,PREFIX=$PREFIX,OUTDIR=$OUTDIR,PVAL="1e-5",GEN=$GEN -wd $OUTDIR -hold_jid $DEP_JIDS job_scripts/run_macs2.sh)
+#qsub -v TREAT_BAM=$TREAT_BAM,INPUT_BAM=$INPUT_BAM,PREFIX=$PREFIX,OUTDIR=$OUTDIR,PVAL="1e-5",GEN=$GEN -wd $OUTDIR -hold_jid $DEP_JIDS job_scripts/run_macs2.broad.sh
+
+qsub_out=$(qsub -v TREAT_BAM=$TREAT_BAM,INPUT_BAM=$INPUT_BAM,PREFIX=$PREFIX,OUTDIR=$OUTDIR,QVAL="1e-2",GEN=$GEN -wd $OUTDIR -hold_jid $DEP_JIDS job_scripts/run_macs2.sh)
+
+qsub_outBP=$(qsub -v TREAT_BAM=$TREAT_BAM,INPUT_BAM=$INPUT_BAM,PREFIX=$PREFIX,OUTDIR=$OUTDIR,QVAL="1e-2",BROADCUTOFF="1e-1",GEN=$GEN -wd $OUTDIR -hold_jid $DEP_JIDS job_scripts/run_macs2.broad.sh)
+
 #if echo $TREAT_BAM | grep -iq pooled; then #don't need loose if pooled
 #	qsub_out_loose=$(qsub -v TREAT_BAM=$TREAT_BAM,INPUT_BAM=$INPUT_BAM,PREFIX=$PREFIX"_loose",OUTDIR=$OUTDIR,PVAL="1e-2" -wd $OUTDIR -hold_jid $DEP_JIDS job_scripts/run_macs2.sh)
 #fi
 #loose_jid=$(parse_jid "$qsub_out_loose")
 
 jid=$(parse_jid "$qsub_out")
+jid_bp=$(parse_jid "$qsub_outBP")
 log "     QSUB_OUT is $qsub_out"
 log "     JID is $jid"
 log "---- end step4"
@@ -46,11 +57,22 @@ METHOD=FE
 qsub_out2=$(qsub -v WD=$WD,TREATMENT=$TREATMENT,CONTROL=$CONTROL,METHOD=$METHOD -wd $OUTDIR -hold_jid $jid job_scripts/run_bdgcmp.sh)
 jid_cmp=$(parse_jid "$qsub_out2")
 
-inputBedGraph=$OUTDIR/$PREFIX"_logFE.bdg"
-inputChromSizes=/slipstream/galaxy/uploads/working/qc_framework/hg38.chrom.sizes
-outputBigWig=$OUTDIR/$PREFIX"_logFE.bw"
+inputBedGraph=$OUTDIR/$PREFIX"_FE.bdg"
+inputChromSizes=/slipstream/galaxy/uploads/working/qc_framework/${GEN}.chrom.sizes
+outputBigWig=$OUTDIR/$PREFIX"_FE.bw"
 qsub_out3=$(qsub -v inputBedGraph=$inputBedGraph,inputChromSizes=$inputChromSizes,outputBigWig=$outputBigWig  -wd $OUTDIR -hold_jid $jid_cmp job_scripts/run_bdg2bw.sh)
 hidden=$(parse_jid "$qsub_out3") #not used but records jid
+
+inputNarrowPeak=$OUTDIR/$PREFIX"_peaks.narrowPeak"
+outputBigBed=$OUTDIR/$PREFIX"_peaks.narrowPeak.bb"
+qsub_outNP=$(qsub -v inputNarrowPeak=$inputNarrowPeak,inputChromSizes=$inputChromSizes,outputBigBed=$outputBigBed  -wd $OUTDIR -hold_jid $jid job_scripts/run_np2bb.sh)
+hiddenNP=$(parse_jid "$qsub_outNP") #not used but records jid
+
+inputNarrowPeak=$OUTDIR/$PREFIX"_peaks.broadPeak"
+outputBigBed=$OUTDIR/$PREFIX"_peaks.broadPeak.bb"
+qsub_outBP=$(qsub -v inputNarrowPeak=$inputNarrowPeak,inputChromSizes=$inputChromSizes,outputBigBed=$outputBigBed  -wd $OUTDIR -hold_jid $jid_bp job_scripts/run_np2bb.sh)
+hiddenNP=$(parse_jid "$qsub_outBP") #not used but records jid
+
 
 #calc FRIP
 #bam_file
@@ -61,7 +83,7 @@ hidden=$(parse_jid "$qsub_out4")
 #intersect with feature types
 #PEAKS
 #ANNOT_DIR
-ANNOT_DIR=/slipstream/galaxy/uploads/working/qc_framework/ref/hg38
+ANNOT_DIR=/slipstream/galaxy/uploads/working/qc_framework/ref/${GEN}
 PEAKS=$(echo $OUTDIR/$PREFIX"_peaks.narrowPeak")
 qsub_out5=$(qsub -v PEAKS=$PEAKS,ANNOT_DIR=$ANNOT_DIR -wd $OUTDIR -hold_jid $jid job_scripts/run_annotation_intersects.sh)
 hidden=$(parse_jid "$qsub_out5")

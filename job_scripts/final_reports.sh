@@ -44,4 +44,15 @@ for f in */*_IDR.npeaks-aboveIDR.txt; do
 	thresh=$(cat $f | awk '{if (NR == 5) print $4}')
 	echo npeaks passing is $thresh
 	sort -nr -k 8,8 $peaks | head -n $thresh | sort -n -k 2 | sort -k 1,1V -k 2,2n > $trunc
+	standard=35000
+        stand_f=${f/_IDR.npeaks-aboveIDR.txt/_pooled_peaks_standard.${standard}.narrowPeak}
+        echo $stand_f
+        sort -nr -k 8,8 $peaks | head -n $standard | sort -n -k 2 | sort -k 1,1V -k 2,2n > $stand_f
 done
+IDR=idr_pooled_peak_counts.txt
+rm -f $IDR
+for f in */*_passIDR.05.narrowPeak; do
+  wc -l $f >> $IDR
+done
+
+

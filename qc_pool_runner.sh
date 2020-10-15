@@ -2,11 +2,11 @@
 #runner called by qc_framework.sh for each raw fastq file
 #arg 1 is raw fastq file, presumed in WD
 #returns job_id of bam file to be used by merge bam
-
+gen=$1
 LOG=$LOG_FILE
-dep_jids=$1
-treat_bam=$(echo $2 | awk 'BEGIN {FS=";"} {print $1}')
-input_bam=$(echo $2 | awk 'BEGIN {FS=";"} {print $2}')
+dep_jids=$2
+treat_bam=$(echo $3 | awk 'BEGIN {FS=";"} {print $1}')
+input_bam=$(echo $3 | awk 'BEGIN {FS=";"} {print $2}')
 log "--start pool runner"
 log "  pool runner on $treat_bam and $input_bam waiting for $dep_jids"
 #echo running step 1
@@ -31,7 +31,7 @@ log "  call peaks for $treat_bam"
 #INPUT_F=$(dirname $BAM_F)/$2"_pooled.bam"
 #mark=echo $f | awk -v index=$3 'BEGIN {FS="_"} {print $index}'
 #echo $INPUT_F is input for $BAM_F, waiting for $dep_jids >> $LOG_FILE
-macs_job=$(bash step_scripts/step4*.sh "$treat_bam" "$input_bam" "$dep_jids")
+macs_job=$(bash step_scripts/step4*.sh "$treat_bam" "$input_bam" "$dep_jids" $gen)
 #fi
 log "  macs job is $macs_job"
 log "--finish pool runner"

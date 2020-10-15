@@ -7,13 +7,22 @@
 #PEAKS1
 #PEAKS2 - 2 rep files
 #PREFIX - prefix of output file (name without extension)
+if [ -z $PEAKS1 ]; then
+  PEAKS1=$1;
+fi
 if [ -z $PEAKS1 ] || [ ! -f $PEAKS1 ]; then
 	echo PEAKS1 $PEAKS1 not found! stop
 	exit 1
 fi
+if [ -z $PEAKS2 ]; then
+  PEAKS2=$2;
+fi
 if [ -z $PEAKS2 ] || [ ! -f $PEAKS2 ]; then
-        echo PEAKS1 $PEAKS2 not found! stop
+        echo PEAKS2 $PEAKS2 not found! stop
         exit 1
+fi
+if [ -z $PREFIX ]; then
+  PREFIX=$3
 fi
 OUTDIR=$(dirname $PREFIX)
 if [ -z $PREFIX ] || [ ! -d $OUTDIR ]; then
@@ -30,7 +39,10 @@ fi
 
 isBroad=F
 SCRIPT_DIR=/slipstream/galaxy/production/toolshed-repositories/toolshed.g2.bx.psu.edu/repos/modencode-dcc/idr_package/6f6a9fbe264e/idr_package
-gen=hg38
+if [ -z $gen ]; then
+  echo gen not provided, using hg38 default
+  gen=hg38
+fi
 gen=/slipstream/galaxy/production/galaxy-dist/tool-data/bigbedwig/$gen.chrom.sizes
 
 #num of peaks is capped at 250k, sort by pval, head 250k, resort by chrm position

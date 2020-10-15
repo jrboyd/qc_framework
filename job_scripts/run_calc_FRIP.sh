@@ -3,12 +3,11 @@
 #$ -e calcFRIP."$JOB_ID".error
 
 ##expected inputs
-#key
 #bam_file
 #peak_file
 if [ -z $bam_file ]; then
 	bam_file=$1
-	echo 2nd arg bam_file=$bam_file
+	echo 1st arg bam_file=$bam_file
 fi
 bam_file=$(readlink -f $bam_file)
 if [ ! -e $bam_file ]; then
@@ -17,7 +16,7 @@ if [ ! -e $bam_file ]; then
 fi
 if [ -z $peak_file ]; then
 peak_file=$2
-echo 3rd arg peak_file=$peak_file
+echo 2nd arg peak_file=$peak_file
 fi
 peak_file=$(readlink -f $peak_file)
 if [ ! -e $peak_file ]; then
@@ -26,7 +25,7 @@ if [ ! -e $peak_file ]; then
 fi
 if [ -z $key ]; then
         key=$(basename $bam_file .bam)
-        echo 1st arg key=$key
+        echo key=$key
 fi
 
 if [ -z $OUT_FILE ]; then
@@ -41,7 +40,7 @@ fi
 echo bam_file is $bam_file
 echo peak_file is $peak_file
 echo calculating FRIP for $(basename $bam_file) and $(basename $peak_file)
-in_peak=$(bedtools intersect -abam -bed -wa -u -f 1 -a $bam_file -b $peak_file | wc -l)
+in_peak=$(bedtools intersect -ubam -bed -wa -u -f 1 -a $bam_file -b $peak_file | wc -l)
 total=0
 cmd="echo no cmd set"
 if [ -f ${bam_file/.bam/.bam.bai} ]; then

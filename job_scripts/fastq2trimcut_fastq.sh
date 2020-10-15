@@ -34,10 +34,10 @@ elif [ ! -z $BAM ]; then
 		cutadapt --format=fastq --anywhere="TruSeq Adapter Index Prefix"='GATCGGAAGAGCACACGTCTGAACTCCAGTCAC' --error-rate=0.0 --times=1 --overlap=20 --discard --output="$INPUT".cutadapt.tmp "$INPUT" > "$INPUT".cutadapt.log.tmp
 		python /slipstream/galaxy/production/shed_tools/toolshed.g2.bx.psu.edu/repos/devteam/fastq_trimmer_by_quality/1cdcaf5fc1da/fastq_trimmer_by_quality/fastq_trimmer_by_quality.py "$INPUT".cutadapt.tmp "$OUTPUT" -f 'sanger' -s '10' -t '1' -e '53' -a 'min' -x '0' -c '>=' -q '20.0'
 	
-		echo trimming file $INPUT
-	        PYTHONPATH=/slipstream/galaxy/production/dependencies/galaxy_sequence_utils/1.0.0/devteam/package_galaxy_utils_1_0/0643676ad5f7/lib/python:$PYTHONPATH; export PYTHONPATH
-        	cutadapt --format=fastq --anywhere="TruSeq Adapter Index Prefix"='GATCGGAAGAGCACACGTCTGAACTCCAGTCAC' --error-rate=0.0 --times=1 --overlap=20 --discard --output="$INPUT".cutadapt.tmp "$INPUT" > "$INPUT".cutadapt.log.tmp
-	        python /slipstream/galaxy/production/shed_tools/toolshed.g2.bx.psu.edu/repos/devteam/fastq_trimmer_by_quality/1cdcaf5fc1da/fastq_trimmer_by_quality/fastq_trimmer_by_quality.py "$INPUT".cutadapt.tmp "$OUTPUT" -f 'sanger' -s '10' -t '1' -e '53' -a 'min' -x '0' -c '>=' -q '20.0'
+#		echo trimming file $INPUT
+#	        PYTHONPATH=/slipstream/galaxy/production/dependencies/galaxy_sequence_utils/1.0.0/devteam/package_galaxy_utils_1_0/0643676ad5f7/lib/python:$PYTHONPATH; export PYTHONPATH
+#       	cutadapt --format=fastq --anywhere="TruSeq Adapter Index Prefix"='GATCGGAAGAGCACACGTCTGAACTCCAGTCAC' --error-rate=0.0 --times=1 --overlap=20 --discard --output="$INPUT".cutadapt.tmp "$INPUT" > "$INPUT".cutadapt.log.tmp
+#	        python /slipstream/galaxy/production/shed_tools/toolshed.g2.bx.psu.edu/repos/devteam/fastq_trimmer_by_quality/1cdcaf5fc1da/fastq_trimmer_by_quality/fastq_trimmer_by_quality.py "$INPUT".cutadapt.tmp "$OUTPUT" -f 'sanger' -s '10' -t '1' -e '53' -a 'min' -x '0' -c '>=' -q '20.0'
 	fi
 fi
 #cp $INPUT $OUTPUT #placeholder 

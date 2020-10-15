@@ -4,6 +4,7 @@
 input=$1
 output=$2
 job_depends=$3
+gen=$4
 if [ -z $input ]; then
 log "arg1 should be input tc fastq but was blank! stop"
 exit 1
@@ -26,14 +27,14 @@ log "--- starting step 2"
 log "    input is $input"
 log "    output is $output"
 log "    will wait for $job_depends"
-JOB1=$(qsub -wd $OUTDIR -v INPUT=$input,OUTPUT=$output -hold_jid $job_depends job_scripts/run_aligner.sh) #add file here
+JOB1=$(qsub -wd $OUTDIR -v INPUT=$input,OUTPUT=$output,GEN=$gen -hold_jid $job_depends job_scripts/run_aligner.sh) #add file here
 #returns whole line
 JOBID=$(parse_jid "$JOB1") #returns JOBID
 log "--- step 2 finished"
 log "    JOBID for step 3 is $JOBID"
 log "    step 2 continues"
 #every rep bam file gets pileup bw generated
-chrm_sizes=/slipstream/galaxy/uploads/working/qc_framework/hg38.chrom.sizes
+chrm_sizes=/slipstream/galaxy/uploads/working/qc_framework/${gen}.chrom.sizes
 JOB2=$(qsub -wd $OUTDIR -v BAM=$output,CHRM_SIZES=$chrm_sizes -hold_jid $JOBID job_scripts/run_pileup_and_bw.sh)
 hidden=$(parse_jid "$JOB2") 
 #cd $SRCDIR

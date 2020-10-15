@@ -55,6 +55,15 @@ FASTQC_JAR_PATH=/slipstream/galaxy/production/dependencies/FastQC/0.11.2/devteam
 #fastqc_dir=$(dirname $TC)/fastqc_files
 #fastqc_f="$TC".fastq_report
 #mkdir $fastqc_dir
+qc_out=${RAW/.fastq/_fastqc}
+if [ -d $qc_out ]; then
+        echo skip fastqc, $qc_out exists for $RAW, please check for completeness
+else
+        echo running fastqc, output to $qc_out
+        fastqc --quiet --extract $RAW
+fi
+
+
 qc_out=${TC/.fastq/_fastqc}
 if [ -d $qc_out ]; then 
 	echo skip fastqc, $qc_out exists for $TC, please check for completeness

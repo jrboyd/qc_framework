@@ -3,12 +3,9 @@
 #runs qc_rep_runner.sh once per raw fastq and qc_pooled_runner.sh once per set of replicates on a merged bam file
 
 #load a config file
-
+#gen=hg38
+gen=U13369
 CFG=$1
-gen=$2
-if [ -z $gen ]; then
-  gen=hg38
-fi
 if [ -z $CFG ]; then
 	CFG=$(pwd)/qc_config.csv
 fi
@@ -45,7 +42,6 @@ then
     done
 fi
 
-mkdir $OUT_DIR -p
 OUT_DIR=$(readlink -f $OUT_DIR)
 rm $OUT_DIR/tmp*
 cp $CFG $OUT_DIR/
@@ -135,7 +131,6 @@ R=$(( $R + 1 ))
 done
 echo input index is $input_index
 #check that all sample_ids are unique, report number of pooled_ids
-echo $TMP_SAMPLE
 total_samples=$(cat $TMP_SAMPLE | wc -l)
 uniq_samples=$(sort $TMP_SAMPLE | uniq | wc -l)
 echo $total_samples
@@ -170,7 +165,6 @@ while [ $i -lt ${#RAW[@]} ]; do
 		else
 			echo staging ${RAW[$i]} to $input
 			ln $IN_DIR/${RAW[$i]} $input
-			if [ ! -f $input ]; then cp $IN_DIR/${RAW[$i]} $input; fi
 		fi
 		bam_job_id=$(bash qc_rep_runner.sh $gen $input)
 		sample2bamjob[$sample_id]=$bam_job_id
@@ -235,7 +229,6 @@ while [ $i -lt ${#RAW[@]} ]; do
 		else
 			echo staging ${RAW[$i]} to $treat
                         ln $IN_DIR/${RAW[$i]} $treat
-			if [ ! -f $treat ]; then cp $IN_DIR/${RAW[$i]} $treat; fi
                 fi
 		#match sample to appropriate pooled input
 		key=$(echo $sample_id | rev | cut -d _ -f 3- | rev)
